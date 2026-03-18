@@ -5,11 +5,11 @@ import { Cliente } from './models/models';
 @Component({
   selector: 'app-cliente-list',
   template: `
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="bg-sagrada-paper rounded-xl shadow-sm border border-[#efe6d8] overflow-hidden">
       
       <!-- Cabecera de la Tabla & Filtros Rápidos -->
-      <div class="p-6 border-b border-slate-100">
-        <h2 class="text-lg font-bold text-slate-800 mb-4">Directorio de Clientes</h2>
+      <div class="p-6 border-b border-[#efe6d8]">
+        <h2 class="text-lg font-bold text-sagrada-purple-dark mb-4">Directorio de Clientes</h2>
         
         <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
           
@@ -19,7 +19,7 @@ import { Cliente } from './models/models';
               type="text" 
               placeholder="Buscar por nombre o empresa..." 
               (input)="actualizarBusqueda($event)"
-              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all text-sm outline-none">
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-sagrada-bg border border-[#dcd0c0] focus:ring-2 focus:ring-blue-600 focus:bg-sagrada-paper transition-all text-sm outline-none">
             <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
 
@@ -27,19 +27,19 @@ import { Cliente } from './models/models';
           <div class="flex gap-2 w-full sm:w-auto">
             <button 
               (click)="setFiltroEstado('Todos')"
-              [ngClass]="filtroEstado === 'Todos' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              [ngClass]="filtroEstado === 'Todos' ? 'bg-sagrada-purple text-white' : 'bg-[#e6d9ce] text-sagrada-purple hover:bg-[#d6c4b4]'"
               class="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
               Todos
             </button>
             <button 
               (click)="setFiltroEstado('Activo')"
-              [ngClass]="filtroEstado === 'Activo' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'"
+              [ngClass]="filtroEstado === 'Activo' ? 'bg-sagrada-gold text-white' : 'bg-[#f0e3d2] text-sagrada-gold hover:bg-[#e6d0a7]'"
               class="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
               Activos
             </button>
             <button 
               (click)="setFiltroEstado('Inactivo')"
-              [ngClass]="filtroEstado === 'Inactivo' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              [ngClass]="filtroEstado === 'Inactivo' ? 'bg-sagrada-purple text-white' : 'bg-[#e6d9ce] text-sagrada-purple hover:bg-[#d6c4b4]'"
               class="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
               Inactivos
             </button>
@@ -51,7 +51,7 @@ import { Cliente } from './models/models';
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse min-w-[700px]">
           <thead>
-            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+            <tr class="bg-sagrada-bg text-slate-500 text-xs uppercase tracking-wider">
               <th class="px-6 py-4 font-semibold">Cliente</th>
               <th class="px-6 py-4 font-semibold">Empresa</th>
               <th class="px-6 py-4 font-semibold">Estado</th>
@@ -60,12 +60,12 @@ import { Cliente } from './models/models';
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-sm">
-            <tr *ngFor="let cliente of getClientesFiltrados()" class="hover:bg-slate-50 transition-colors group">
+            <tr *ngFor="let cliente of getClientesFiltrados()" class="hover:bg-sagrada-bg transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <img [src]="cliente.avatar" alt="Avatar" class="w-10 h-10 rounded-full shadow-sm">
                   <div>
-                    <p class="font-semibold text-slate-800">{{ cliente.nombre }}</p>
+                    <p class="font-semibold text-sagrada-purple-dark">{{ cliente.nombre }}</p>
                     <p class="text-xs text-slate-500">ID: {{ cliente.id }}</p>
                   </div>
                 </div>
@@ -74,7 +74,7 @@ import { Cliente } from './models/models';
               <td class="px-6 py-4">
                 <span 
                   class="px-3 py-1 rounded-full text-xs font-semibold"
-                  [ngClass]="cliente.estado === 'Activo' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'">
+                  [ngClass]="cliente.estado === 'Activo' ? 'bg-[#e6cc98] text-[#7a5c18]' : 'bg-slate-100 text-slate-600'">
                   {{ cliente.estado }}
                 </span>
               </td>
