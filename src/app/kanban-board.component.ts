@@ -5,13 +5,13 @@ import { Trato, EtapaTrato } from './models/models';
 @Component({
   selector: 'app-kanban-board',
   template: `
-    <div class="bg-slate-50 min-h-[600px] rounded-xl">
-      <div class="p-6 border-b border-slate-200 bg-white rounded-t-xl flex justify-between items-center">
+    <div class="bg-sagrada-bg min-h-[600px] rounded-xl">
+      <div class="p-6 border-b border-[#d5c3af] bg-sagrada-paper rounded-t-xl flex justify-between items-center">
         <div>
-          <h2 class="text-xl font-bold text-slate-800">Pipeline de Ventas</h2>
+          <h2 class="text-xl font-bold text-sagrada-purple-dark">Pipeline de Ventas</h2>
           <p class="text-sm text-slate-500 mt-1">Arrastra y suelta oportunidades (Próximamente)</p>
         </div>
-        <button class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+        <button class="bg-sagrada-purple hover:bg-sagrada-purple-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
           + Añadir Trato
         </button>
       </div>
@@ -20,7 +20,7 @@ import { Trato, EtapaTrato } from './models/models';
       <div class="p-6 flex gap-6 overflow-x-auto pb-8 items-start">
         
         <!-- Iteramos sobre nuestras columnas definidas -->
-        <div *ngFor="let columna of columnas" class="flex-none w-80 bg-slate-100/50 rounded-xl p-4 border border-slate-200/60">
+        <div *ngFor="let columna of columnas" class="flex-none w-80 bg-sagrada-paper/60 rounded-xl p-4 border border-[#d5c3af]/60">
           
           <!-- Cabecera de Columna -->
           <div class="flex justify-between items-center mb-4 px-1">
@@ -28,7 +28,7 @@ import { Trato, EtapaTrato } from './models/models';
               <span class="w-2.5 h-2.5 rounded-full" [ngClass]="columna.color"></span>
               {{ columna.nombre }}
             </h3>
-            <span class="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-1 rounded-md">
+            <span class="bg-sagrada-bg text-slate-600 text-xs font-bold px-2 py-1 rounded-md">
               {{ getTratosPorEtapa(columna.nombre).length }}
             </span>
           </div>
@@ -36,7 +36,7 @@ import { Trato, EtapaTrato } from './models/models';
           <!-- Lista de Tarjetas (Oportunidades) -->
           <div class="space-y-3">
             <div *ngFor="let trato of getTratosPorEtapa(columna.nombre)" 
-                 class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group">
+                 class="bg-sagrada-paper p-4 rounded-xl shadow-sm border border-[#d5c3af] hover:shadow-md hover:border-sagrada-gold transition-all cursor-pointer group">
               
               <!-- Empresa y Opciones -->
               <div class="flex justify-between items-start mb-2">
@@ -47,14 +47,14 @@ import { Trato, EtapaTrato } from './models/models';
               </div>
 
               <!-- Nombre del Trato -->
-              <h4 class="font-semibold text-slate-800 leading-tight mb-3">
+              <h4 class="font-semibold text-sagrada-purple-dark leading-tight mb-3">
                 {{ trato.nombre }}
               </h4>
 
               <!-- Monto y Separador -->
-              <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
+              <div class="pt-3 border-t border-[#eee4d8] flex justify-between items-center">
                 <span class="text-slate-500 text-xs font-medium">Monto estimado</span>
-                <span class="font-bold text-slate-800 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md text-sm">
+                <span class="font-bold text-sagrada-purple-dark bg-[#e6cc98] text-[#7a5c18] px-2 py-1 rounded-md text-sm">
                   {{ trato.monto | currency:'USD':'symbol':'1.0-0' }}
                 </span>
               </div>
@@ -62,7 +62,7 @@ import { Trato, EtapaTrato } from './models/models';
 
             <!-- Estado Vacío por Columna -->
             <div *ngIf="getTratosPorEtapa(columna.nombre).length === 0" 
-                 class="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400">
+                 class="border-2 border-dashed border-[#d5c3af] rounded-xl p-6 flex flex-col items-center justify-center text-slate-400">
               <span class="text-xs font-medium">Sin tratos</span>
             </div>
           </div>

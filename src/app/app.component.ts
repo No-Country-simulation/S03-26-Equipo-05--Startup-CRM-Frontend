@@ -4,114 +4,14 @@ import { Kpi } from './models/models';
 
 @Component({
   selector: 'app-root',
-  template: `
-    <div class="flex h-screen bg-slate-50 text-slate-800 font-sans overflow-hidden">
-      
-      <!-- Sidebar Colapsable -->
-      <aside 
-        class="bg-blue-900 text-white transition-all duration-300 flex flex-col shadow-xl z-20"
-        [ngClass]="sidebarAbierto ? 'w-64' : 'w-20'">
-        
-        <div class="p-4 flex items-center justify-between border-b border-blue-800/50 h-16">
-          <span class="font-bold text-xl truncate tracking-tight" *ngIf="sidebarAbierto">CRM Enterprise</span>
-          <button (click)="toggleSidebar()" class="p-2 rounded-lg hover:bg-blue-800 transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-          </button>
-        </div>
-
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-          <!-- Active State Link -->
-          <a href="#" class="flex items-center gap-4 p-3 rounded-xl bg-blue-800 text-white transition-colors group hover:bg-blue-700">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-            <span *ngIf="sidebarAbierto" class="font-medium">Dashboard Central</span>
-          </a>
-          <!-- Idle State Link -->
-          <a href="#" class="flex items-center gap-4 p-3 rounded-xl text-blue-200 transition-colors group hover:bg-blue-800 hover:text-white">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            <span *ngIf="sidebarAbierto" class="font-medium">Directorio</span>
-          </a>
-        </nav>
-      </aside>
-
-      <!-- Contenido Principal -->
-      <main class="flex-1 flex flex-col h-full overflow-hidden">
-        
-        <!-- Topbar Superior -->
-        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10 flex-shrink-0">
-          <div class="relative w-full max-w-md hidden md:block">
-            <input type="text" placeholder="Buscador global..." 
-                   class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all text-sm outline-none">
-            <svg class="w-5 h-5 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          </div>
-          
-          <div class="flex items-center gap-4 ml-auto">
-            <!-- Botón de Notificación -->
-            <button class="relative p-2 text-slate-400 hover:text-blue-600 transition-colors rounded-full hover:bg-slate-50">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-              <!-- Punto rojo de notificación activa -->
-              <span class="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            
-            <!-- Perfil de Usuario -->
-            <div class="flex items-center gap-3 border-l pl-4 border-slate-200 cursor-pointer hover:bg-slate-50 p-1.5 rounded-xl transition-colors">
-              <img src="https://i.pravatar.cc/150?img=11" alt="Perfil" class="w-9 h-9 rounded-full shadow-sm">
-              <div class="hidden md:block">
-                <p class="text-sm font-bold text-slate-800 leading-none">Admin Demo</p>
-                <p class="text-xs text-slate-500 mt-1 font-medium">Head of Sales</p>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <!-- Área Central Scrolleable -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50">
-          <div class="max-w-7xl mx-auto space-y-8">
-            
-            <!-- Bienvenida -->
-            <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-              <div>
-                <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Pipeline Overview</h1>
-                <p class="text-slate-500 mt-1">Aquí tienes un resumen actualizado de tu negocio hoy.</p>
-              </div>
-              <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl shadow-sm text-sm font-semibold transition-all transform hover:-translate-y-0.5 whitespace-nowrap">
-                + Nuevo Trato
-              </button>
-            </div>
-
-            <!-- Tarjetas de KPIs (Cargando desde el Observable) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div *ngFor="let kpi of kpis" class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-                <div class="flex justify-between items-start mb-4">
-                  <h3 class="text-slate-500 text-sm font-semibold">{{ kpi.titulo }}</h3>
-                  <div class="p-2.5 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                  </div>
-                </div>
-                <p class="text-3xl font-bold text-slate-800">{{ kpi.valor }}</p>
-                <p class="text-sm mt-3 flex items-center font-medium" [ngClass]="kpi.tendencia > 0 ? 'text-emerald-500' : 'text-red-500'">
-                  <span>{{ kpi.tendencia > 0 ? '+' : '' }}{{ kpi.tendencia }}%</span>
-                  <span class="text-slate-400 ml-2 font-normal">vs mes anterior</span>
-                </p>
-              </div>
-            </div>
-
-            <!-- Interfaz ClienteList y Kanban (Para MVP mostramos ambos en el Dashboard Central) -->
-            
-            <app-cliente-list></app-cliente-list>
-
-            <app-kanban-board></app-kanban-board>
-
-          </div>
-        </div>
-      </main>
-    </div>
-  `
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
   sidebarAbierto: boolean = true;
   kpis: Kpi[] = [];
 
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService) { }
 
   ngOnInit() {
     this.dataService.getKpis().subscribe(data => {
