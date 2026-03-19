@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from './services/mock-data.service';
 import { Cliente } from './models/models';
+import { NotificationService } from './services/notification.service';
 
 @Component({
   selector: 'app-cliente-list',
@@ -81,9 +82,17 @@ import { Cliente } from './models/models';
               <td class="px-6 py-4 text-slate-500">{{ cliente.ultimaInteraccion | date:'mediumDate' }}</td>
               <td class="px-6 py-4 text-right">
                 <!-- Acciones (Solo visibles en Hover para UI más limpia) -->
-                <button class="text-slate-400 hover:text-blue-600 transition-colors p-2 opacity-0 group-hover:opacity-100">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                </button>
+                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button (click)="enviarWhatsApp(cliente)" title="Enviar WhatsApp" class="text-slate-400 hover:text-emerald-500 transition-colors p-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                  </button>
+                  <button (click)="enviarEmail(cliente)" title="Enviar Email" class="text-slate-400 hover:text-blue-500 transition-colors p-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                  </button>
+                  <button class="text-slate-400 hover:text-slate-600 transition-colors p-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                  </button>
+                </div>
               </td>
             </tr>
             
@@ -109,7 +118,7 @@ export class ClienteListComponent implements OnInit {
   busqueda: string = '';
   filtroEstado: 'Todos' | 'Activo' | 'Inactivo' = 'Todos';
 
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService, private notifService: NotificationService) {}
 
   ngOnInit() {
     this.dataService.getClientes().subscribe(data => {
@@ -134,6 +143,18 @@ export class ClienteListComponent implements OnInit {
       const coincideBusqueda = c.nombre.toLowerCase().includes(term) || c.empresa.toLowerCase().includes(term);
       const coincideEstado = estado === 'Todos' || c.estado === estado;
       return coincideBusqueda && coincideEstado;
+    });
+  }
+
+  enviarWhatsApp(cliente: Cliente) {
+    this.notifService.sendWhatsApp({ phone: '+5491122334455', message: `Hola ${cliente.nombre}, ¿cómo estás?` }).subscribe(res => {
+      alert(`WhatsApp enviado a ${cliente.nombre}`);
+    });
+  }
+
+  enviarEmail(cliente: Cliente) {
+    this.notifService.sendEmail({ to: 'fake@email.com', subject: 'Contacto CRM', body: `Hola ${cliente.nombre}...` }).subscribe(res => {
+      alert(`Email enviado a ${cliente.nombre}`);
     });
   }
 }

@@ -10,6 +10,7 @@ import { DataService } from 'src/app/services/mock-data.service';
 export class HomeComponent implements OnInit {
 
   kpis: Kpi[] = [];
+  mostrarModal: boolean = false;
 
   // El servicio ahora se inyecta aquí
   constructor(private dataService: DataService) { }
@@ -18,6 +19,14 @@ export class HomeComponent implements OnInit {
     this.dataService.getKpis().subscribe(data => {
       this.kpis = data;
     });
+  }
+
+  abrirModal() {
+    this.mostrarModal = true;
+  }
+
+  cerrarModal() {
+    this.mostrarModal = false;
   }
 
 }

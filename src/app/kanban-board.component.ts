@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from './services/mock-data.service';
 import { Trato, EtapaTrato } from './models/models';
+import { NotificationService } from './services/notification.service';
 
 @Component({
   selector: 'app-kanban-board',
@@ -41,9 +42,14 @@ import { Trato, EtapaTrato } from './models/models';
               <!-- Empresa y Opciones -->
               <div class="flex justify-between items-start mb-2">
                 <span class="text-xs font-bold tracking-wide text-slate-400 uppercase">{{ trato.empresa }}</span>
-                <button class="text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
-                </button>
+                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button (click)="enviarWhatsApp(trato)" title="Enviar WhatsApp" class="text-slate-300 hover:text-emerald-500 transition-colors p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                  </button>
+                  <button (click)="enviarEmail(trato)" title="Enviar Email" class="text-slate-300 hover:text-blue-500 transition-colors p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                  </button>
+                </div>
               </div>
 
               <!-- Nombre del Trato -->
@@ -85,7 +91,7 @@ export class KanbanBoardComponent implements OnInit {
     { nombre: 'Cerrado', color: 'bg-emerald-400' }
   ];
 
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService, private notifService: NotificationService) {}
 
   ngOnInit(): void {
     this.dataService.getTratos().subscribe({
@@ -98,5 +104,17 @@ export class KanbanBoardComponent implements OnInit {
 
   getTratosPorEtapa(etapa: EtapaTrato): Trato[] {
     return this.tratos.filter(trato => trato.etapa === etapa);
+  }
+
+  enviarWhatsApp(trato: Trato) {
+    this.notifService.sendWhatsApp({ phone: '+5491122334455', message: `Acerca del trato: ${trato.nombre}` }).subscribe(res => {
+      alert(`WhatsApp enviado por el trato con ${trato.empresa}`);
+    });
+  }
+
+  enviarEmail(trato: Trato) {
+    this.notifService.sendEmail({ to: 'fake@email.com', subject: 'Actualización de trato', body: `Novedades sobre el trato: ${trato.nombre}` }).subscribe(res => {
+      alert(`Email enviado por el trato con ${trato.empresa}`);
+    });
   }
 }
