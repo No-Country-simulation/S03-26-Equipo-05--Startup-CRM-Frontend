@@ -51,12 +51,26 @@
                         <p class="text-sm text-slate-400 mt-0.5">Administra tu información personal.</p>
                     </div>
                     <div class="p-6 space-y-5">
-                        <!-- Avatar -->
+                        <!-- Avatar con Upload -->
                         <div class="flex items-center gap-5">
-                            <img [src]="perfil.avatar" class="w-20 h-20 rounded-full border-4 border-sagrada-purple/20 shadow-md">
+                            <div class="relative group cursor-pointer" (click)="avatarInput.click()">
+                                <img [src]="perfil.avatar" class="w-20 h-20 rounded-full border-4 border-sagrada-purple/20 shadow-md object-cover">
+                                <!-- Overlay Hover con ícono de cámara -->
+                                <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </div>
+                                <!-- Input oculto -->
+                                <input #avatarInput type="file" accept="image/*" class="hidden" (change)="onAvatarChange($event)">
+                            </div>
                             <div>
                                 <h3 class="text-lg font-bold text-slate-800">{{ perfil.nombre }}</h3>
                                 <p class="text-sm text-slate-400">Administrador Principal</p>
+                                <button (click)="avatarInput.click()" class="text-xs font-semibold text-sagrada-purple hover:text-sagrada-purple-dark mt-1 transition-colors">
+                                    📷 Cambiar foto
+                                </button>
                             </div>
                         </div>
 

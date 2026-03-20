@@ -85,6 +85,40 @@ export class ConfiguracionComponent implements OnInit {
     });
   }
 
+  onAvatarChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const archivo = input.files[0];
+
+    // Validar tamaño (máx 5MB)
+    if (archivo.size > 5 * 1024 * 1024) {
+      Swal.fire('Archivo muy grande', 'La imagen no puede superar los 5MB.', 'warning');
+      return;
+    }
+
+    // Validar tipo
+    if (!archivo.type.startsWith('image/')) {
+      Swal.fire('Formato inválido', 'Solo se permiten archivos de imagen (JPG, PNG, WEBP).', 'warning');
+      return;
+    }
+
+    // Leer como Data URL (base64) para preview inmediato
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.perfil.avatar = reader.result as string;
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Foto de perfil actualizada',
+        showConfirmButton: false,
+        timer: 2000
+      });
+    };
+    reader.readAsDataURL(archivo);
+  }
+
   guardarEmpresa(): void {
     Swal.fire({
       icon: 'success',
