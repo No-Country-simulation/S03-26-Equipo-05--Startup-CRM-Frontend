@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/mock-data.service';
+import { ExportService } from '../../services/export.service';
 import { Trato, Cliente, EtapaTrato } from '../../models/models';
 
 interface MetricaKpi {
@@ -49,7 +50,10 @@ export class MetricasComponent implements OnInit {
     'Cerrado': 'bg-emerald-500'
   };
 
-  constructor(private dataService: DataService) {}
+  constructor(
+    private dataService: DataService,
+    private exportService: ExportService
+  ) {}
 
   ngOnInit(): void {
     this.dataService.getTratos().subscribe(tratos => {
@@ -191,5 +195,16 @@ export class MetricasComponent implements OnInit {
       'Cerrado': 'bg-emerald-100 text-emerald-700'
     };
     return clases[etapa] || 'bg-slate-100 text-slate-700';
+  }
+
+  // ==== FUNCIONES DE EXPORTACIÓN E IMPRESIÓN ====
+
+  exportarDatos(): void {
+    if (this.tratos.length === 0) return;
+    this.exportService.exportarTratosCSV(this.tratos);
+  }
+
+  imprimirDashboard(): void {
+    window.print();
   }
 }
