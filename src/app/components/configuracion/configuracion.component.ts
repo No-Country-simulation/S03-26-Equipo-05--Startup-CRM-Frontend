@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/mock-data.service';
+import { ThemeService } from '../../services/theme.service';
 import { EtapaTrato } from '../../models/models';
 import Swal from 'sweetalert2';
 
@@ -56,6 +57,9 @@ export class ConfiguracionComponent implements OnInit {
   ];
   nuevaEtapa: string = '';
 
+  // Modo Oscuro Automático
+  isDarkModeAutomatic: boolean = false;
+
   // Módulos Próximamente
   modulosProximamente = [
     { titulo: 'Gestión de Usuarios', descripcion: 'Invitar vendedores, asignar roles y permisos.', icono: '👥' },
@@ -66,9 +70,33 @@ export class ConfiguracionComponent implements OnInit {
     { titulo: 'Auditoría', descripcion: 'Historial de cambios realizados por cada usuario.', icono: '📋' }
   ];
 
-  constructor(private dataService: DataService) {}
+  constructor(
+    private dataService: DataService,
+    private themeService: ThemeService
+  ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Inicializar estado del modo oscuro desde el servicio
+    this.isDarkModeAutomatic = this.themeService.isDarkModeAutomatic;
+  }
+
+  toggleDarkModeAutomatic(): void {
+    this.themeService.setDarkModeAutomatic(this.isDarkModeAutomatic);
+    
+    // Notificación visual de cambio
+    const msg = this.isDarkModeAutomatic 
+      ? 'Modo Oscuro automático activado (20:00 - 08:00)' 
+      : 'Modo Oscuro automático desactivado';
+      
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: msg,
+      showConfirmButton: false,
+      timer: 2000
+    });
+  }
 
   cambiarSeccion(seccion: string): void {
     this.seccionActiva = seccion;
