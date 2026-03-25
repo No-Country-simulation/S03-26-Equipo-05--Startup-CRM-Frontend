@@ -1,37 +1,37 @@
 <div class="overflow-y-auto overflow-x-hidden p-4 md:p-6 bg-sagrada-bg w-full">
     <div class="max-w-7xl mx-auto flex flex-col gap-6">
 
-        <!-- Encabezado -->
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Analítica & Métricas</h1>
                 <p class="text-slate-500 mt-1">Rendimiento general del pipeline de ventas en tiempo real.</p>
             </div>
-            
+
             <div class="flex items-center gap-3 print:hidden">
-                <button (click)="imprimirDashboard()" class="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 hover:text-sagrada-purple transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sagrada-purple/50">
+                <button (click)="imprimirDashboard()"
+                    class="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 hover:text-sagrada-purple transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sagrada-purple/50">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                        </path>
                     </svg>
                     Imprimir
                 </button>
-                <button (click)="exportarDatos()" class="flex items-center gap-2 px-4 py-2 bg-sagrada-purple text-white font-semibold rounded-xl hover:bg-sagrada-purple-dark transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sagrada-purple/50 focus:ring-offset-2">
+                <button (click)="exportarDatos()"
+                    class="flex items-center gap-2 px-4 py-2 bg-sagrada-purple text-white font-semibold rounded-xl hover:bg-sagrada-purple-dark transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sagrada-purple/50 focus:ring-offset-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                     </svg>
                     Exportar CSV
                 </button>
             </div>
         </div>
 
-        <!-- ════════════════════════════════════════════ -->
-        <!-- SECCIÓN 1: KPIs Superiores (4 Tarjetas)     -->
-        <!-- ════════════════════════════════════════════ -->
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <div *ngFor="let kpi of kpis"
                 class="relative overflow-hidden bg-sagrada-paper p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition-all group">
 
-                <!-- Círculo decorativo de fondo -->
                 <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-gradient-to-br opacity-10 group-hover:opacity-20 transition-opacity"
                     [ngClass]="kpi.color"></div>
 
@@ -47,12 +47,8 @@
             </div>
         </div>
 
-        <!-- ════════════════════════════════════════════ -->
-        <!-- FILA CENTRAL: Funnel + Pipeline              -->
-        <!-- ════════════════════════════════════════════ -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-            <!-- SECCIÓN 2: Embudo de Ventas -->
             <div class="bg-sagrada-paper rounded-2xl shadow-sm border border-slate-100 p-5">
                 <h2 class="text-base font-bold text-sagrada-purple-dark mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,15 +61,13 @@
                 <div class="flex flex-col items-center gap-2">
                     <div *ngFor="let etapa of etapasFunnel; let i = index"
                         class="relative transition-all duration-300 rounded-lg py-3 px-4 text-center hover:scale-[1.02]"
-                        [ngClass]="etapa.color"
-                        [style.width.%]="getFunnelWidth(i)"
-                        [style.opacity]="0.85 + (i * 0.05)">
+                        [ngClass]="etapa.color" [style.width.%]="getFunnelWidth(i)" [style.opacity]="0.85 + (i * 0.05)">
 
                         <div class="flex justify-between items-center text-white">
                             <span class="text-sm font-bold uppercase tracking-wider">{{ etapa.nombre }}</span>
                             <div class="flex items-center gap-3">
-                                <span
-                                    class="text-xs font-semibold bg-white/20 px-2 py-0.5 rounded-full">{{ etapa.cantidad }}
+                                <span class="text-xs font-semibold bg-white/20 px-2 py-0.5 rounded-full">{{
+                                    etapa.cantidad }}
                                     tratos</span>
                                 <span class="text-lg font-extrabold">{{ etapa.porcentaje }}%</span>
                             </div>
@@ -82,7 +76,6 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 3: Distribución del Pipeline por Monto -->
             <div class="bg-sagrada-paper rounded-2xl shadow-sm border border-slate-100 p-5">
                 <h2 class="text-base font-bold text-sagrada-purple-dark mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,12 +106,8 @@
             </div>
         </div>
 
-        <!-- ════════════════════════════════════════════ -->
-        <!-- FILA INFERIOR: Top Tratos + Clientes Activos -->
-        <!-- ════════════════════════════════════════════ -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-            <!-- SECCIÓN 4: Top 5 Tratos -->
             <div class="bg-sagrada-paper rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100">
                     <h2 class="text-base font-bold text-sagrada-purple-dark flex items-center gap-2">
@@ -167,7 +156,6 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 5: Clientes Más Activos -->
             <div class="bg-sagrada-paper rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100">
                     <h2 class="text-base font-bold text-sagrada-purple-dark flex items-center gap-2">
@@ -210,24 +198,19 @@
             </div>
         </div>
 
-        <!-- ════════════════════════════════════════════ -->
-        <!-- SECCIÓN 6: Actividad Reciente (Timeline)     -->
-        <!-- ════════════════════════════════════════════ -->
         <div class="bg-sagrada-paper rounded-2xl shadow-sm border border-slate-100 p-5">
             <h2 class="text-base font-bold text-sagrada-purple-dark mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                Actividad Reciente
+                Timeline
             </h2>
             <div class="relative">
-                <!-- Línea vertical del Timeline -->
                 <div class="absolute left-5 top-0 bottom-0 w-0.5 bg-slate-200"></div>
 
                 <div *ngFor="let act of actividades; let last = last" class="relative flex items-start gap-4 mb-4"
                     [class.mb-0]="last">
-                    <!-- Punto del Timeline -->
                     <div
                         class="w-8 h-8 rounded-full bg-sagrada-bg border-2 border-sagrada-purple/30 flex items-center justify-center text-sm z-10 flex-shrink-0">
                         {{ act.icono }}
