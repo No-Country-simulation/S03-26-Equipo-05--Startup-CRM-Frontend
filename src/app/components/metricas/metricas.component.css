@@ -1,1 +1,19 @@
 /* Animaciones específicas de la página de Métricas */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-animate-in {
+  animation: fadeInUp 0.5s ease-out forwards;
+  opacity: 0; /* starts hidden until animation triggers */
+}
+
+/* Tooltip custom overrides if needed - we are using Tailwind for most */

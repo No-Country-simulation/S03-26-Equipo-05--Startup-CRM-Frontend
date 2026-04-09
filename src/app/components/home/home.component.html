@@ -1,7 +1,6 @@
 <div class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-sagrada-bg w-full relative">
     <div class="max-w-7xl mx-auto flex flex-col gap-10">
 
-        <!-- Bienvenida -->
         <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Pipeline Overview</h1>
@@ -13,19 +12,19 @@
             </button>
         </div>
 
-        <!-- Tarjetas de KPIs (Cargando desde el Observable) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div *ngFor="let kpi of kpis"
-                class="bg-sagrada-paper p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
+                class="bg-sagrada-paper p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group relative"
+                [ngClass]="{'z-50 scale-105 shadow-2xl': isKpiExpanded(kpi.titulo), 'z-10': !isKpiExpanded(kpi.titulo)}">
                 <div class="flex justify-between items-start mb-4">
                     <h3 class="text-slate-500 text-sm font-semibold">{{ kpi.titulo }}</h3>
-                    <div
-                        class="p-2.5 bg-sagrada-purple/10 text-sagrada-purple rounded-lg group-hover:bg-sagrada-gold group-hover:text-white transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button (click)="toggleKpi(kpi.titulo)" title="Ver Detalles"
+                        class="p-2.5 bg-sagrada-purple/10 text-sagrada-purple rounded-lg hover:scale-105 hover:bg-sagrada-purple hover:text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-sagrada-purple/30">
+                        <svg class="w-5 h-5 transition-transform duration-300" [class.rotate-90]="isKpiExpanded(kpi.titulo)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                         </svg>
-                    </div>
+                    </button>
                 </div>
                 <p class="text-3xl font-bold text-slate-800">{{ kpi.valor }}</p>
                 <p class="text-sm mt-3 flex items-center font-medium"
@@ -33,11 +32,25 @@
                     <span>{{ kpi.tendencia > 0 ? '+' : '' }}{{ kpi.tendencia }}%</span>
                     <span class="text-slate-400 ml-2 font-normal">vs mes anterior</span>
                 </p>
+
+                <!-- Área Expandible de Detalles (Absolute Dropdown) -->
+                <div *ngIf="isKpiExpanded(kpi.titulo)" class="absolute left-0 right-0 top-[102%] bg-sagrada-paper p-4 rounded-b-xl shadow-2xl border border-slate-100 animate-fade-in-down z-50">
+                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2">Desglose Detallado</p>
+                    <ul class="space-y-1.5">
+                        <li class="flex justify-between items-center text-xs text-slate-600 bg-slate-50/50 hover:bg-slate-100 p-2 rounded-lg transition-colors">
+                           <span class="font-medium">Semana Acumulada</span>
+                           <span class="font-bold text-slate-800">75%</span>
+                        </li>
+                        <li class="flex justify-between items-center text-xs text-slate-600 bg-slate-50/50 hover:bg-slate-100 p-2 rounded-lg transition-colors">
+                           <span class="font-medium">Proyección Mensual</span>
+                           <span class="font-bold text-sagrada-purple">Positiva</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
 
 
-        <!-- Interfaz ClienteList y Kanban (Para MVP mostramos ambos en el Dashboard Central) -->
         <app-cliente-list></app-cliente-list>
 
         <app-kanban-board></app-kanban-board>

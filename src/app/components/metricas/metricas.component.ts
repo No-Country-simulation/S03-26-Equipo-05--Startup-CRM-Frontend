@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/mock-data.service';
 import { ExportService } from '../../services/export.service';
 import { Trato, Cliente, EtapaTrato } from '../../models/models';
+import { BehaviorSubject, combineLatest } from 'rxjs';
+import { delay, tap } from 'rxjs/operators';
 
 interface MetricaKpi {
   titulo: string;
@@ -33,6 +35,10 @@ interface ActividadReciente {
 })
 export class MetricasComponent implements OnInit {
 
+  isLoading: boolean = true;
+  filtroTiempo$ = new BehaviorSubject<string>('este_mes');
+  filtroActual: string = 'este_mes';
+
   kpis: MetricaKpi[] = [];
   etapasFunnel: EtapaFunnel[] = [];
   topTratos: Trato[] = [];
@@ -56,12 +62,39 @@ export class MetricasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.dataService.getTratos().subscribe(tratos => {
-      this.tratos = tratos;
-      this.dataService.getClientes().subscribe(clientes => {
-        this.clientes = clientes;
-        this.calcularTodo();
-      });
+    combineLatest([
+      this.dataService.getTratos(),
+      this.dataService.getClientes(),
+      this.filtroTiempo$
+    ]).pipe(
+      tap(([_, __, filtro]) => {
+        this.isLoading = true;
+        this.filtroActual = filtro;
+      }),
+      delay(600) // Simular latencia de red para mostrar skeletons
+    ).subscribe(([tratos, clientes, filtro]) => {
+      this.tratos = this.aplicarFiltro(tratos, filtro);
+      this.clientes = clientes;
+      this.calcularTodo();
+      this.isLoading = false;
+    });
+  }
+
+  cambiarFiltro(filtro: string): void {
+    if (this.filtroActual !== filtro) {
+      this.filtroTiempo$.next(filtro);
+    }
+  }
+
+  private aplicarFiltro(tratos: Trato[], filtro: string): Trato[] {
+    if (filtro === 'todos') return [...tratos];
+    
+    // Simulación de filtro temporal para demostrar fluidez
+    return tratos.filter(t => {
+      const charCode = t.nombre.charCodeAt(0) + t.monto;
+      if (filtro === 'este_mes') return charCode % 3 !== 0; 
+      if (filtro === 'mes_anterior') return charCode % 2 === 0;
+      return true;
     });
   }
 

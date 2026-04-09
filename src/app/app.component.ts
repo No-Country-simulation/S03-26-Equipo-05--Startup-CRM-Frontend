@@ -12,35 +12,68 @@ import { PhonePipe } from './pipes/phone.pipe';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  sidebarAbierto: boolean = true;
+  sidebarAbierto: boolean = false;
   isLoggedIn: boolean = false;
   mostrarMenuPerfil: boolean = false;
-  
+
   mostrarNotificaciones: boolean = false;
   unreadCount: number = 0;
   notifications: AppNotification[] = [];
-  
+
   isRegistering: boolean = false;
   nombreAdmin: string = 'Administrador';
+  avatarAdmin: string = 'https://i.pravatar.cc/150?img=11';
   loginData = {
     nombre: '',
     email: 'admin@sagrada.com',
     password: ''
   };
   isSubmitting: boolean = false;
+  zoomActivo: boolean = false;
+  altoContrasteActivo: boolean = false;
 
   constructor(
-    private authService: AuthService, 
-    private dataService: DataService, 
+    private authService: AuthService,
+    private dataService: DataService,
     private notifService: NotificationService,
     private themeService: ThemeService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.notifService.notifications$.subscribe(notifs => {
       this.notifications = notifs;
       this.unreadCount = notifs.filter(n => !n.read).length;
     });
+
+    this.dataService.avatarAdmin$.subscribe(avatar => {
+      this.avatarAdmin = avatar;
+    });
+
+    this.dataService.nombreAdmin$.subscribe(nombre => {
+      if (nombre) {
+        this.nombreAdmin = nombre;
+      }
+    });
+  }
+
+  toggleZoom() {
+    this.zoomActivo = !this.zoomActivo;
+    const bodyStyles = document.body.style as any;
+    if (this.zoomActivo) {
+      bodyStyles.zoom = "1.15";
+    } else {
+      bodyStyles.zoom = "1";
+    }
+  }
+
+  toggleAltoContraste() {
+    this.altoContrasteActivo = !this.altoContrasteActivo;
+    if (this.altoContrasteActivo) {
+      // Un contraste más alto y ligeramente desaturado/saturado dependiendo de la preferencia para mejorar legibilidad general
+      document.body.style.filter = "contrast(1.4) saturate(1.3) brightness(0.95)";
+    } else {
+      document.body.style.filter = "none";
+    }
   }
 
   toggleNotificaciones() {
@@ -50,6 +83,10 @@ export class AppComponent implements OnInit {
 
   marcarTodoLeido() {
     this.notifService.markAllAsRead();
+  }
+
+  limpiarNotificaciones() {
+    this.notifService.clearAll();
   }
 
   toggleSidebar() {
@@ -84,37 +121,79 @@ export class AppComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    // Guardar el nombre para que se vea reflejado en el Dashboard
     if (this.loginData.nombre) {
-      this.nombreAdmin = this.loginData.nombre;
+      this.dataService.setNombreAdmin(this.loginData.nombre);
     }
 
-    setTimeout(() => {
-      this.isSubmitting = false;
-      Swal.fire({
-        icon: 'success',
-        title: '¡Administrador Creado!',
-        text: 'La estructura para enviarlo al Backend de Spring está lista.',
-        confirmButtonColor: '#4A2B65' // sagrada-purple
-      });
-      // Devolvemos a modo login tras crear
-      this.isRegistering = false; 
-    }, 1200);
+    const payload = {
+      nombre: this.loginData.nombre,
+      email: this.loginData.email,
+      password: this.loginData.password
+    };
+
+    this.authService.register(payload).subscribe({
+      next: (res) => {
+        this.isSubmitting = false;
+        Swal.fire({
+          icon: 'success',
+          title: '¡Administrador Creado!',
+          text: 'Usuario guardado correctamente en la base de datos.',
+          confirmButtonColor: '#4A2B65'
+        });
+        this.isRegistering = false;
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de Registro',
+          text: err.error?.message || 'No se pudo registrar el usuario en el backend.',
+          confirmButtonColor: '#4A2B65'
+        });
+      }
+    });
   }
 
   doLogin() {
-    // ENTORNO DE DESARROLLO (MOCK): Acceso directo sin restricciones de credenciales
+    if (!this.loginData.email || !this.loginData.password) {
+      Swal.fire('Oops...', 'Ingresa tu correo y contraseña', 'warning');
+      return;
+    }
+
     this.isSubmitting = true;
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.isLoggedIn = true;
-    }, 500); // Check rápido animado simulado
+    this.authService.login(this.loginData).subscribe({
+      next: (res) => {
+        this.isSubmitting = false;
+        this.isLoggedIn = true;
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Conectado correctamente con el servidor',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: 'No se puede recuperar la información',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+      }
+    });
   }
 
   doLogout() {
     this.mostrarMenuPerfil = false;
     this.isLoggedIn = false;
-    this.loginData.password = ''; // Limpiamos la contraseña por seguridad
+    this.loginData.password = '';
     Swal.fire({
       toast: true,
       position: 'top-end',
@@ -148,11 +227,9 @@ export class AppComponent implements OnInit {
     });
 
     if (telefono) {
-      // Usamos el PhonePipe "manualmente" para formatear lo que acabas de escribir
       const telefonoFormateado = new PhonePipe().transform(telefono);
 
       localStorage.setItem('whatsapp_phone', telefonoFormateado);
-      // En el futuro, esto hará un POST al backend (ej: this.authService.updatePhone(telefono))
       Swal.fire('Guardado', `Tu número ${telefonoFormateado} ha sido vinculado correctamente para los envíos de WhatsApp.`, 'success');
     }
   }

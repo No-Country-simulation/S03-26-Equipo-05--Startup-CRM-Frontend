@@ -6,9 +6,6 @@ import { Cliente, Trato } from '../models/models';
 })
 export class ExportService {
 
-  /**
-   * Exporta un array de Clientes a CSV y dispara la descarga automática.
-   */
   exportarClientesCSV(clientes: Cliente[]): void {
     const encabezados = ['ID', 'Nombre', 'Empresa', 'Ciudad', 'Estado', 'Email', 'Teléfono', 'Última Interacción'];
 
@@ -27,9 +24,6 @@ export class ExportService {
     this.descargarArchivo(csv, 'clientes_sagrada_madre.csv');
   }
 
-  /**
-   * Exporta un array de Tratos a CSV y dispara la descarga automática.
-   */
   exportarTratosCSV(tratos: Trato[]): void {
     const encabezados = ['ID', 'Nombre', 'Empresa', 'Etapa', 'Monto (USD)'];
 
@@ -45,10 +39,6 @@ export class ExportService {
     this.descargarArchivo(csv, 'tratos_sagrada_madre.csv');
   }
 
-  /**
-   * Genera el string CSV completo a partir de encabezados y filas.
-   * Escapa comas y comillas dentro de los valores.
-   */
   private generarCSV(encabezados: string[], filas: string[][]): string {
     const escaparCelda = (valor: string): string => {
       if (valor.includes(',') || valor.includes('"') || valor.includes('\n')) {
@@ -67,12 +57,8 @@ export class ExportService {
     return lineas.join('\n');
   }
 
-  /**
-   * Crea un Blob con el contenido CSV y dispara la descarga del archivo.
-   * Usa BOM UTF-8 para que Excel reconozca tildes y ñ correctamente.
-   */
   private descargarArchivo(contenido: string, nombreArchivo: string): void {
-    const bom = '\uFEFF'; // BOM UTF-8 para Excel
+    const bom = '\uFEFF';
     const blob = new Blob([bom + contenido], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
 
@@ -84,7 +70,6 @@ export class ExportService {
     document.body.appendChild(enlace);
     enlace.click();
 
-    // Limpieza
     document.body.removeChild(enlace);
     window.URL.revokeObjectURL(url);
   }

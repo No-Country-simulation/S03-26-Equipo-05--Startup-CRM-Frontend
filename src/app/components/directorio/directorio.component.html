@@ -55,6 +55,10 @@
     
     <!-- Header Card -->
     <div class="bg-sagrada-bg p-6 text-center border-b border-slate-100 relative">
+      <button (click)="editarCliente(clienteSeleccionado)" class="absolute top-4 left-4 p-2 text-slate-400 hover:text-sagrada-purple hover:bg-sagrada-purple/10 rounded-full transition-colors z-10" title="Editar Cliente">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+      </button>
+
       <img [src]="clienteSeleccionado.avatar" alt="Avatar" class="w-20 h-20 rounded-full mx-auto shadow-md border-4 border-white mb-3 relative z-10">
       <div class="absolute inset-0 bg-sagrada-purple/5"></div>
       
@@ -108,8 +112,8 @@
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
       </div>
       <div>
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Agendar Cliente</h2>
-        <p class="text-sm text-slate-500">Agrega un nuevo cliente al directorio</p>
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">{{ esModoEdicion ? 'Editar Cliente' : 'Agendar Cliente' }}</h2>
+        <p class="text-sm text-slate-500">{{ esModoEdicion ? 'Modifica los datos del cliente' : 'Agrega un nuevo cliente al directorio' }}</p>
       </div>
     </div>
 
@@ -127,11 +131,11 @@
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm text-slate-600 font-semibold mb-1">Email</label>
+          <label class="block text-sm text-slate-600 font-semibold mb-1">Email <span class="text-red-500">*</span></label>
           <input type="email" [(ngModel)]="nuevoClienteData.email" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sagrada-purple focus:border-sagrada-purple outline-none bg-slate-50 focus:bg-white transition-all">
         </div>
         <div>
-          <label class="block text-sm text-slate-600 font-semibold mb-1">Teléfono</label>
+          <label class="block text-sm text-slate-600 font-semibold mb-1">Teléfono <span class="text-red-500">*</span></label>
           <input type="text" [(ngModel)]="nuevoClienteData.telefono" placeholder="Ej: 5491143211234" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sagrada-purple focus:border-sagrada-purple outline-none bg-slate-50 focus:bg-white transition-all">
         </div>
       </div>
@@ -149,7 +153,7 @@
           Cancelar
         </button>
         <button (click)="guardarNuevoCliente()" class="bg-sagrada-purple hover:bg-sagrada-purple-dark text-white px-6 py-2.5 rounded-xl shadow-md shadow-purple-200 font-semibold transition-all transform hover:-translate-y-0.5">
-          Guardar Cliente
+          {{ esModoEdicion ? 'Guardar Cambios' : 'Guardar Cliente' }}
         </button>
       </div>
     </div>

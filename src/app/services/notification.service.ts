@@ -29,12 +29,11 @@ export interface WhatsAppPayload {
 export class NotificationService {
 
   private apiUrl = 'http://localhost:8080/api';
-  
-  // Estado global de notificaciones visuales
+
   private notificationsSource = new BehaviorSubject<AppNotification[]>([
     {
       id: '1',
-      title: '¡Bienvenido al CRM!',
+      title: '¡Bienvenido!',
       message: 'Las notificaciones del sistema aparecerán aquí.',
       date: new Date(),
       read: false,
@@ -54,19 +53,22 @@ export class NotificationService {
       read: false,
       type
     };
-    
-    // Agregamos al principio de la lista
+
     const current = this.notificationsSource.getValue();
     this.notificationsSource.next([newNotif, ...current]);
   }
 
   markAllAsRead(): void {
-    const current = this.notificationsSource.getValue().map(n => ({...n, read: true}));
+    const current = this.notificationsSource.getValue().map(n => ({ ...n, read: true }));
     this.notificationsSource.next(current);
   }
 
+  clearAll(): void {
+    this.notificationsSource.next([]);
+  }
+
   markAsRead(id: string): void {
-    const current = this.notificationsSource.getValue().map(n => n.id === id ? {...n, read: true} : n);
+    const current = this.notificationsSource.getValue().map(n => n.id === id ? { ...n, read: true } : n);
     this.notificationsSource.next(current);
   }
 
@@ -75,54 +77,48 @@ export class NotificationService {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
-      
+
+      // Sonido tipo "Campanita / Ding"
       oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 
-      oscillator.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); 
-      
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); 
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-      
+      oscillator.frequency.setValueAtTime(1567.98, audioCtx.currentTime); // G6 (tono agudo y claro)
+
+      // Envolvente de volumen: ataque rápido y decaimiento largo
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.0);
+
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
-      
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.1);
+
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 1.0);
     } catch (e) {
-      console.warn('Audio no soportado', e);
+      console.warn('Audio no soportado o bloqueado por el navegador');
     }
   }
 
 
   sendEmail(payload: EmailPayload): Observable<any> {
-    console.log('📬 [MOCK] Solicitud de envío de Email enviada:', payload);
+    console.log('📬 Solicitud de envío de Email despachada al servidor:', payload);
 
-
-    return of({ success: true, message: 'Email enviado exitosamente (Mock)' }).pipe(
-      delay(1500),
+    return this.http.post<any>(`${this.apiUrl}/notifications/email`, payload).pipe(
       tap(response => {
-        console.log('✅ [MOCK] Respuesta del servidor Email:', response);
-        this.addNotification('Correo Enviado', `Se ha enviado el correo Mock = ${payload.to}`, 'success');
+        console.log('✅ Email enviado vía servidor SMTP:', response);
+        this.addNotification('Correo Enviado', `Se ha despachado el correo a: ${payload.to}`, 'success');
         this.playSuccessSound();
       })
     );
-
   }
 
-
   sendWhatsApp(payload: WhatsAppPayload): Observable<any> {
-    console.log('💬 [MOCK] Solicitud de envío de WhatsApp enviada:', payload);
+    console.log('💬 Solicitud de envío de WhatsApp despachada al servidor:', payload);
 
-
-    return of({ success: true, message: 'WhatsApp enviado exitosamente (Mock)' }).pipe(
-      delay(1500),
+    return this.http.post<any>(`${this.apiUrl}/notifications/whatsapp`, payload).pipe(
       tap(response => {
-        console.log('✅ [MOCK] Respuesta del servidor WhatsApp:', response);
-        this.addNotification('WhatsApp Enviado', `Se ha enviado un WhatsApp Mock a ${payload.phone}`, 'success');
+        console.log('✅ WhatsApp registrado en servidor:', response);
+        this.addNotification('WhatsApp Despachado', `Se ha procesado el envío hacia: ${payload.phone}`, 'success');
         this.playSuccessSound();
       })
     );
-
-
   }
 }

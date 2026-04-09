@@ -9,13 +9,11 @@ import Swal from 'sweetalert2';
   template: `
     <div class="bg-sagrada-paper rounded-xl shadow-sm border border-[#efe6d8] overflow-hidden">
       
-      <!-- Cabecera de la Tabla & Filtros Rápidos -->
       <div class="p-6 border-b border-[#efe6d8]">
         <h2 class="text-lg font-bold text-sagrada-purple-dark mb-4">Directorio de Clientes</h2>
         
         <div class="flex flex-col sm:flex-row gap-4 justify-end items-center">
           
-          <!-- Píldoras de Filtro por Estado -->
           <div class="flex gap-2 w-full sm:w-auto">
             <button 
               (click)="setFiltroEstado('Todos')"
@@ -39,7 +37,6 @@ import Swal from 'sweetalert2';
         </div>
       </div>
 
-      <!-- Tabla Responsive -->
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse min-w-[700px]">
           <thead>
@@ -72,7 +69,6 @@ import Swal from 'sweetalert2';
               </td>
               <td class="px-6 py-4 text-slate-500">{{ cliente.ultimaInteraccion | date:'mediumDate' }}</td>
               <td class="px-6 py-4 text-right">
-                <!-- Acciones (Visibles solo en hover) -->
                 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button (click)="enviarWhatsApp(cliente)" title="Enviar WhatsApp" class="text-slate-400 hover:text-emerald-500 transition-colors p-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
@@ -87,7 +83,6 @@ import Swal from 'sweetalert2';
               </td>
             </tr>
             
-            <!-- Estado Vacío (Zero State) -->
             <tr *ngIf="getClientesFiltrados().length === 0">
               <td colspan="5" class="px-6 py-12 text-center text-slate-500">
                 <div class="flex flex-col items-center justify-center">
@@ -104,12 +99,12 @@ import Swal from 'sweetalert2';
   `
 })
 export class ClienteListComponent implements OnInit {
-  
+
   clientes: Cliente[] = [];
   busquedaGlobal: string = '';
   filtroEstado: 'Todos' | 'Activo' | 'Inactivo' = 'Todos';
 
-  constructor(private dataService: DataService, private notifService: NotificationService) {}
+  constructor(private dataService: DataService, private notifService: NotificationService) { }
 
   ngOnInit() {
     this.dataService.getClientes().subscribe(data => {
@@ -127,19 +122,19 @@ export class ClienteListComponent implements OnInit {
   getClientesFiltrados(): Cliente[] {
     const termGlobal = this.busquedaGlobal.toLowerCase();
     const estado = this.filtroEstado;
-    
+
     return this.clientes.filter(c => {
       const coincideGlobal = c.nombre.toLowerCase().includes(termGlobal) || c.empresa.toLowerCase().includes(termGlobal);
       const coincideEstado = estado === 'Todos' || c.estado === estado;
-      
+
       return coincideGlobal && coincideEstado;
     });
   }
 
   enviarWhatsApp(cliente: Cliente) {
-    this.notifService.sendWhatsApp({ phone: '+5491122334455', message: `Hola ${cliente.nombre}, ¿cómo estás?` }).subscribe(res => {
-      Swal.fire('¡Enviado!', `WhatsApp enviado a ${cliente.nombre}`, 'success');
-    });
+    const telefono = cliente.telefono ? cliente.telefono.replace(/\D/g, '') : '5491122334455';
+    const mensaje = encodeURIComponent(`Hola ${cliente.nombre}`);
+    window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
   }
 
   enviarEmail(cliente: Cliente) {

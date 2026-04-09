@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { delay, tap, switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { delay, map, tap } from 'rxjs/operators';
 
 export interface LoginPayload {
   email: string;
@@ -12,37 +12,43 @@ export interface LoginPayload {
   providedIn: 'root'
 })
 export class AuthService {
-  // Cuando conectes el backend, cambia esta URL:
   private apiUrl = 'http://localhost:8080/api/auth';
 
   constructor(private http: HttpClient) { }
 
-  /**
-   * Realiza un login mockeado que acepta cualquier email y password.
-   */
+  register(payload: any): Observable<any> {
+    console.log('📝 Solicitud de Registro Mockeada:', payload.email);
+    // return this.http.post<any>(`${this.apiUrl}/register`, payload);
+    return of({ success: true, message: 'Mock register success' }).pipe(delay(500));
+  }
+
   login(payload: LoginPayload): Observable<any> {
-    console.log('🔒 [MOCK] Solicitud de Login:', payload.email);
+    console.log('🔒 Solicitud de Login Mockeada:', payload.email);
 
-    // Simulamos una latencia y una validación básica
-    return of(payload).pipe(
-      delay(1500),
-      switchMap(data => {
-        if (!data.email || !data.password) {
-          return throwError(() => new Error('Email y contraseña son obligatorios'));
-        }
-        // Retornamos un token inventado para simular éxito
-        return of({
-          success: true,
-          token: 'mock-jwt-token-123456789',
-          user: { email: data.email, role: 'admin' }
-        });
+    const mockResponse = {
+      token: 'mock-jwt-token-12345'
+    };
+
+    return of(mockResponse).pipe(
+      delay(800),
+      tap(response => {
+        localStorage.setItem('token', response.token);
+        console.log('✅ Login Exitoso (MOCK), token guardado en localStorage');
       }),
-      tap(response => console.log('✅ [MOCK] Login Exitoso:', response))
+      map(response => ({
+        success: true,
+        token: response.token,
+        user: { email: payload.email, role: 'admin' }
+      }))
     );
+  }
 
-    /*
-    // VERSIÓN REAL (Descomentar cuando Java esté listo):
-    // return this.http.post(`${this.apiUrl}/login`, payload);
-    */
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  logout() {
+    localStorage.removeItem('token');
   }
 }
+

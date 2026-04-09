@@ -5,6 +5,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { AppComponent } from './app.component';
 import { ClienteListComponent } from './cliente-list.component';
 import { KanbanBoardComponent } from './kanban-board.component';
@@ -33,7 +35,9 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     FormsModule,
     DragDropModule
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
-export class AppModule { /* Refreshed cache */ }
+export class AppModule { }

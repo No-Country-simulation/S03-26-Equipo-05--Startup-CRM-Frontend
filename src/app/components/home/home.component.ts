@@ -11,6 +11,7 @@ import { KanbanBoardComponent } from '../../kanban-board.component';
 export class HomeComponent implements OnInit {
 
   kpis: Kpi[] = [];
+  expandedKpis: Set<string> = new Set();
   @ViewChild(KanbanBoardComponent) kanbanBoard!: KanbanBoardComponent;
 
   // El servicio ahora se inyecta aquí
@@ -20,6 +21,18 @@ export class HomeComponent implements OnInit {
     this.dataService.getKpis().subscribe(data => {
       this.kpis = data;
     });
+  }
+
+  toggleKpi(titulo: string) {
+    if (this.expandedKpis.has(titulo)) {
+      this.expandedKpis.delete(titulo);
+    } else {
+      this.expandedKpis.add(titulo);
+    }
+  }
+
+  isKpiExpanded(titulo: string): boolean {
+    return this.expandedKpis.has(titulo);
   }
 
   abrirModal() {

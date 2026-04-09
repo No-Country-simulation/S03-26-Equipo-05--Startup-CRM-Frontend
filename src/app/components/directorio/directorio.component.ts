@@ -15,12 +15,21 @@ export class DirectorioComponent implements OnInit {
   mostrarModalNuevoCliente: boolean = false;
   clienteSeleccionado: Cliente | null = null;
   
-  nuevoClienteData = {
+  esModoEdicion: boolean = false;
+  idEdicion: string | undefined;
+  
+  nuevoClienteData: {
+    nombre: string;
+    empresa: string;
+    email: string;
+    telefono: string;
+    estado: 'Activo' | 'Inactivo';
+  } = {
     nombre: '',
     empresa: '',
     email: '',
     telefono: '',
-    estado: 'Activo' as const
+    estado: 'Activo'
   };
 
   constructor(private dataService: DataService) {}
@@ -44,8 +53,24 @@ export class DirectorioComponent implements OnInit {
   }
 
   abrirModalNuevoCliente() {
+    this.esModoEdicion = false;
+    this.idEdicion = undefined;
     this.mostrarModalNuevoCliente = true;
     this.nuevoClienteData = { nombre: '', empresa: '', email: '', telefono: '', estado: 'Activo' };
+  }
+
+  editarCliente(cliente: Cliente) {
+    this.esModoEdicion = true;
+    this.idEdicion = cliente.id;
+    this.nuevoClienteData = {
+      nombre: cliente.nombre,
+      empresa: cliente.empresa,
+      email: cliente.email || '',
+      telefono: cliente.telefono || '',
+      estado: cliente.estado as 'Activo' | 'Inactivo'
+    };
+    this.cerrarDetalleCliente();
+    this.mostrarModalNuevoCliente = true;
   }
 
   cerrarModalNuevoCliente() {
@@ -53,25 +78,41 @@ export class DirectorioComponent implements OnInit {
   }
 
   guardarNuevoCliente() {
-    if (!this.nuevoClienteData.nombre || !this.nuevoClienteData.empresa) {
-      Swal.fire('Error', 'Nombre y Empresa son campos obligatorios para agendar un cliente', 'error');
+    if (!this.nuevoClienteData.nombre || !this.nuevoClienteData.empresa || !this.nuevoClienteData.email || !this.nuevoClienteData.telefono) {
+      Swal.fire('Error', 'Todos los campos (Nombre, Empresa, Email y Teléfono) son obligatorios', 'error');
       return;
     }
 
-    const nuevo: Cliente = {
-      id: Math.random().toString(36).substr(2, 9),
-      nombre: this.nuevoClienteData.nombre,
-      empresa: this.nuevoClienteData.empresa,
-      email: this.nuevoClienteData.email,
-      telefono: this.nuevoClienteData.telefono,
-      estado: this.nuevoClienteData.estado,
-      avatar: 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70),
-      ultimaInteraccion: new Date().toISOString().split('T')[0]
-    };
+    if (this.esModoEdicion && this.idEdicion) {
+      const clienteOriginal = this.clientes.find(c => c.id === this.idEdicion);
+      const actualizado: Cliente = {
+        id: this.idEdicion,
+        nombre: this.nuevoClienteData.nombre,
+        empresa: this.nuevoClienteData.empresa,
+        email: this.nuevoClienteData.email,
+        telefono: this.nuevoClienteData.telefono,
+        estado: this.nuevoClienteData.estado,
+        avatar: clienteOriginal?.avatar || 'https://i.pravatar.cc/150?img=1',
+        ultimaInteraccion: clienteOriginal?.ultimaInteraccion || new Date().toISOString().split('T')[0]
+      };
+      this.dataService.updateCliente(actualizado);
+      Swal.fire('¡Actualizado!', `${actualizado.nombre} ha sido actualizado exitosamente.`, 'success');
+    } else {
+      const nuevo: Cliente = {
+        id: Math.random().toString(36).substr(2, 9),
+        nombre: this.nuevoClienteData.nombre,
+        empresa: this.nuevoClienteData.empresa,
+        email: this.nuevoClienteData.email,
+        telefono: this.nuevoClienteData.telefono,
+        estado: this.nuevoClienteData.estado,
+        avatar: 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70),
+        ultimaInteraccion: new Date().toISOString().split('T')[0]
+      };
+      this.dataService.addCliente(nuevo);
+      Swal.fire('¡Cliente Agendado!', `${nuevo.nombre} ha sido añadido al directorio exitosamente.`, 'success');
+    }
 
-    this.dataService.addCliente(nuevo);
     this.cerrarModalNuevoCliente();
-    Swal.fire('¡Cliente Agendado!', `${nuevo.nombre} ha sido añadido al directorio exitosamente.`, 'success');
   }
 
   verDetalleCliente(cliente: Cliente) {

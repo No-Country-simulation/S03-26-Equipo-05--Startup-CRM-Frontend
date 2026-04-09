@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/mock-data.service';
 import { ThemeService } from '../../services/theme.service';
 import { EtapaTrato } from '../../models/models';
+import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
 
 interface PerfilAdmin {
@@ -30,23 +31,9 @@ export class ConfiguracionComponent implements OnInit {
   // Sección activa del sidebar interno
   seccionActiva: string = 'perfil';
 
-  // Datos del Perfil Admin (mock)
-  perfil: PerfilAdmin = {
-    nombre: 'Rodrigo Admin',
-    email: 'admin@sagrada.com',
-    telefono: '+54 9 11 4444-5555',
-    avatar: 'https://i.pravatar.cc/150?img=12'
-  };
-
-  // Datos de la Empresa (mock)
-  empresa: DatosEmpresa = {
-    nombreComercial: 'Sagrada Madre',
-    razonSocial: 'Sagrada Madre S.R.L.',
-    cuit: '30-12345678-9',
-    direccion: 'Av. Pellegrini 1234, Rosario, Santa Fe',
-    telefono: '+54 341 510-9918',
-    sitioWeb: 'www.sagradamadre.com'
-  };
+  // Se inicializan vacíos esperando la conexión al backend
+  perfil: PerfilAdmin = { nombre: '', email: '', telefono: '', avatar: '' };
+  empresa: DatosEmpresa = { nombreComercial: '', razonSocial: '', cuit: '', direccion: '', telefono: '', sitioWeb: '' };
 
   // Etapas del Pipeline
   etapasPipeline: { nombre: string; color: string }[] = [
@@ -72,12 +59,36 @@ export class ConfiguracionComponent implements OnInit {
 
   constructor(
     private dataService: DataService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
-    // Inicializar estado del modo oscuro desde el servicio
     this.isDarkModeAutomatic = this.themeService.isDarkModeAutomatic;
+    this.cargarPerfil();
+    this.cargarEmpresa();
+  }
+
+  cargarPerfil(): void {
+    this.http.get<PerfilAdmin>('http://localhost:8080/api/admin/profile').subscribe({
+      next: (data) => {
+        this.perfil = data;
+        if (data.avatar) {
+          this.dataService.setAvatarAdmin(data.avatar);
+        }
+        if (data.nombre) {
+          this.dataService.setNombreAdmin(data.nombre);
+        }
+      },
+      error: () => console.error('Error al cargar Perfil de Usuario')
+    });
+  }
+
+  cargarEmpresa(): void {
+    this.http.get<DatosEmpresa>('http://localhost:8080/api/company').subscribe({
+      next: (data) => this.empresa = data,
+      error: () => console.error('Error al cargar Datos de Empresa')
+    });
   }
 
   toggleDarkModeAutomatic(): void {
@@ -103,13 +114,19 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   guardarPerfil(): void {
-    Swal.fire({
-      icon: 'success',
-      title: '¡Perfil Actualizado!',
-      text: 'Los cambios se guardarán en la base de datos cuando conectemos Spring Boot.',
-      confirmButtonColor: '#4A2B65',
-      timer: 3000,
-      showConfirmButton: true
+    if (this.perfil.telefono) {
+      localStorage.setItem('whatsapp_phone', this.perfil.telefono);
+    }
+    
+    if (this.perfil.nombre) {
+      this.dataService.setNombreAdmin(this.perfil.nombre);
+    }
+
+    this.http.put('http://localhost:8080/api/admin/profile', this.perfil).subscribe({
+      next: () => {
+        Swal.fire({ icon: 'success', title: '¡Perfil Actualizado!', confirmButtonColor: '#4A2B65', timer: 3000 });
+      },
+      error: () => Swal.fire('Error', 'No se pudo actualizar el perfil', 'error')
     });
   }
 
@@ -135,6 +152,7 @@ export class ConfiguracionComponent implements OnInit {
     const reader = new FileReader();
     reader.onload = () => {
       this.perfil.avatar = reader.result as string;
+      this.dataService.setAvatarAdmin(this.perfil.avatar);
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -148,13 +166,11 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   guardarEmpresa(): void {
-    Swal.fire({
-      icon: 'success',
-      title: '¡Datos de Empresa Guardados!',
-      text: 'Esta información aparecerá en reportes y facturas.',
-      confirmButtonColor: '#4A2B65',
-      timer: 3000,
-      showConfirmButton: true
+    this.http.put('http://localhost:8080/api/company', this.empresa).subscribe({
+      next: () => {
+        Swal.fire({ icon: 'success', title: '¡Datos de Empresa Guardados!', confirmButtonColor: '#4A2B65', timer: 3000 });
+      },
+      error: () => Swal.fire('Error', 'No se pudieron guardar los datos', 'error')
     });
   }
 

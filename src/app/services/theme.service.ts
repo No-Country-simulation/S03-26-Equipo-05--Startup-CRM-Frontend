@@ -10,7 +10,6 @@ export class ThemeService {
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     if (isPlatformBrowser(this.platformId)) {
-      // Cargar preferencia guardada
       const savedPreference = localStorage.getItem('darkModeAutomatic');
       if (savedPreference !== null) {
         this._isDarkModeAutomatic = savedPreference === 'true';
@@ -43,9 +42,8 @@ export class ThemeService {
 
   private checkAndApplyAutomaticTheme() {
     if (!isPlatformBrowser(this.platformId)) return;
-    
+
     const currentHour = new Date().getHours();
-    // Entre las 20:00 (8 PM) y las 8:00 (8 AM)
     if (currentHour >= 20 || currentHour < 8) {
       this.enableDarkMode();
     } else {
@@ -56,7 +54,6 @@ export class ThemeService {
   private startCheckingTheme() {
     if (!isPlatformBrowser(this.platformId)) return;
     this.stopCheckingTheme();
-    // Revisar cada minuto
     this.intervalId = setInterval(() => {
       this.checkAndApplyAutomaticTheme();
     }, 60000);
@@ -72,7 +69,6 @@ export class ThemeService {
   private enableDarkMode() {
     if (isPlatformBrowser(this.platformId)) {
       document.documentElement.classList.add('dark');
-      // También podemos agregar body classes si es necesario
       document.body.classList.add('dark-theme');
     }
   }

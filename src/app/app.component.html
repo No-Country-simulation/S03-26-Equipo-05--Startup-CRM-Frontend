@@ -19,7 +19,6 @@
     </div>
 
     <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-      <!-- Nav Link Dashboard -->
       <a routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="!bg-sagrada-purple-dark !text-white"
         (click)="cerrarSidebarMobile()"
         class="flex items-center gap-4 p-3 rounded-xl text-blue-200 transition-colors group hover:bg-sagrada-purple-dark hover:text-white">
@@ -66,7 +65,8 @@
 
   <main class="flex-1 flex flex-col h-full overflow-hidden relative print:h-auto print:overflow-visible">
 
-    <header class="h-16 bg-sagrada-paper shadow-sm flex items-center justify-between px-4 md:px-8 z-10 flex-shrink-0 print:hidden">
+    <header
+      class="h-16 bg-sagrada-paper shadow-sm flex items-center justify-between px-4 md:px-8 z-[60] flex-shrink-0 print:hidden relative">
       <button (click)="toggleSidebar()" class="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg mr-2">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -105,12 +105,15 @@
 
 
           <div *ngIf="mostrarNotificaciones"
-            class="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50">
+            class="fixed sm:absolute top-[72px] sm:top-full left-1/2 sm:left-auto -translate-x-1/2 sm:translate-x-0 sm:right-0 mt-0 sm:mt-2 w-[92vw] sm:w-80 max-w-sm bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50">
             <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-sagrada-bg">
               <h3 class="font-bold text-sagrada-purple-dark text-sm">Notificaciones</h3>
-              <button *ngIf="unreadCount > 0" (click)="marcarTodoLeido()"
-                class="text-xs text-sagrada-purple hover:text-sagrada-gold transition-colors font-medium">Marcar
-                leídas</button>
+              <div class="flex gap-4">
+                <button *ngIf="unreadCount > 0" (click)="marcarTodoLeido()"
+                  class="text-xs text-sagrada-purple hover:text-sagrada-gold transition-colors font-medium">Leídas</button>
+                <button *ngIf="notifications.length > 0" (click)="limpiarNotificaciones()"
+                  class="text-xs text-slate-400 hover:text-red-500 transition-colors font-medium">Limpiar</button>
+              </div>
             </div>
 
             <div class="max-h-80 overflow-y-auto divide-y divide-slate-50">
@@ -146,7 +149,7 @@
 
           <div (click)="toggleMenuPerfil()"
             class="flex items-center gap-3 cursor-pointer hover:bg-sagrada-bg p-1.5 rounded-xl transition-colors">
-            <img src="https://i.pravatar.cc/150?img=11" alt="Perfil" class="w-9 h-9 rounded-full shadow-sm">
+            <img [src]="avatarAdmin" alt="Perfil" class="w-9 h-9 rounded-full shadow-sm object-cover">
             <div class="hidden md:block">
               <p class="text-sm font-bold text-slate-800 leading-none">{{ nombreAdmin }}</p>
               <p class="text-xs text-slate-500 mt-1 font-medium">Head of Sales</p>
@@ -196,7 +199,7 @@
 </div>
 
 <div *ngIf="!isLoggedIn"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900/60 to-slate-800/70 backdrop-blur-sm p-4 transition-all duration-500">
+  class="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-slate-300/10 to-slate-800/70 backdrop-blur-sm p-4 transition-all duration-500">
 
   <div
     class="bg-white/95 backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)] border border-white/40 p-8 relative overflow-hidden transform transition-all translate-y-0 scale-100">
@@ -216,7 +219,7 @@
       <div class="flex justify-center mb-8">
         <div
           class="w-16 h-16 bg-gradient-to-tr from-sagrada-purple-dark via-sagrada-purple to-sagrada-gold/80 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-purple-900/20 transform rotate-3 hover:rotate-6 transition-transform">
-          <svg class="w-8 h-8 -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-8 h-8 -rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4">
             </path>
@@ -251,7 +254,8 @@
             </div>
             <input id="registerNombre" name="registerNombre" type="text" [(ngModel)]="loginData.nombre"
               placeholder="Ej. Rodrigo Admin"
-              class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-slate-100 focus:ring-0 focus:border-sagrada-purple bg-slate-50/50 focus:bg-white text-slate-800 placeholder-slate-400 transition-all font-medium outline-none">
+              class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:ring-0 focus:border-sagrada-purple bg-slate-100 focus:bg-white text-slate-900 placeholder-slate-500 font-bold outline-none"
+              style="color: #0f172a; background-color: #f8fafc;">
           </div>
         </div>
 
@@ -270,7 +274,8 @@
             </div>
             <input id="loginEmail" name="loginEmail" type="email" [(ngModel)]="loginData.email"
               placeholder="tucorreo@empresa.com"
-              class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-slate-100 focus:ring-0 focus:border-sagrada-purple bg-slate-50/50 focus:bg-white text-slate-800 placeholder-slate-400 transition-all font-medium outline-none">
+              class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:ring-0 focus:border-sagrada-purple bg-slate-100 focus:bg-white text-slate-900 placeholder-slate-500 font-bold outline-none"
+              style="color: #0f172a; background-color: #f8fafc;">
           </div>
         </div>
 
@@ -292,7 +297,8 @@
             </div>
             <input id="loginPassword" name="loginPassword" type="password" [(ngModel)]="loginData.password"
               placeholder="••••••••" (keyup.enter)="doLogin()"
-              class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-slate-100 focus:ring-0 focus:border-sagrada-purple bg-slate-50/50 focus:bg-white text-slate-800 placeholder-slate-400 transition-all font-medium outline-none">
+              class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:ring-0 focus:border-sagrada-purple bg-slate-100 focus:bg-white text-slate-900 placeholder-slate-300 font-bold outline-none"
+              style="color: #0f172a; background-color: #f8fafc;">
           </div>
         </div>
       </div>
@@ -328,7 +334,33 @@
           </a>
         </p>
       </div>
-
     </div>
   </div>
+</div>
+
+<!-- Widget de Accesibilidad Draggable -->
+<div class="fixed bottom-6 right-6 z-[100] cursor-move flex flex-col items-center gap-3 bg-white/50 backdrop-blur-md p-2 rounded-full shadow-lg border border-white/40 group/widget" cdkDrag>
+  <!-- Handle opcional para mostrar que es arrastrable -->
+  <div class="w-6 h-1.5 bg-slate-300/80 rounded-full mb-1 opacity-50 group-hover/widget:opacity-100 transition-opacity"></div>
+  
+  <!-- Botón Alto Contraste -->
+  <button (click)="toggleAltoContraste()" 
+          class="w-12 h-12 bg-slate-800 text-white rounded-full shadow-md flex items-center justify-center hover:bg-black hover:scale-105 transition-all outline-none focus:ring-4 focus:ring-slate-400/50 group"
+          [ngClass]="{'ring-4 ring-sagrada-gold bg-black': altoContrasteActivo}"
+          title="Accesibilidad: Alto Contraste">
+    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+    </svg>
+  </button>
+
+  <!-- Botón Zoom -->
+  <button (click)="toggleZoom()" 
+          class="w-12 h-12 bg-sagrada-purple text-white rounded-full shadow-md flex items-center justify-center hover:bg-sagrada-purple-dark hover:scale-105 transition-all outline-none focus:ring-4 focus:ring-sagrada-purple/30 group"
+          [ngClass]="{'ring-4 ring-sagrada-gold bg-sagrada-purple-dark': zoomActivo}"
+          title="Accesibilidad: Zoom">
+    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 7v6m3-3H7"></path>
+    </svg>
+  </button>
 </div>

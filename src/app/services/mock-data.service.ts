@@ -1,79 +1,94 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { Cliente, Kpi, Trato, EtapaTrato } from '../models/models';
-
-let MOCK_CLIENTES: Cliente[] = [
-  { id: '1', nombre: 'Ana García', empresa: 'TechCorp', avatar: 'https://i.pravatar.cc/150?img=9', estado: 'Activo', ultimaInteraccion: '2023-10-25', email: 'ana@techcorp.com', telefono: '+5491144445555' },
-  { id: '2', nombre: 'Carlos Ruiz', empresa: 'Global Logistics', avatar: 'https://i.pravatar.cc/150?img=3', estado: 'Inactivo', ultimaInteraccion: '2023-09-15', email: 'carlos@global.com', telefono: '+5491122223333' },
-  { id: '3', nombre: 'Elena Mora', empresa: 'Finanza Startup', avatar: 'https://i.pravatar.cc/150?img=5', estado: 'Activo', ultimaInteraccion: '2023-11-02', email: 'elena@finanza.com' },
-  { id: '4', nombre: 'David Silva', empresa: 'EcoEnergies', avatar: 'https://i.pravatar.cc/150?img=8', estado: 'Activo', ultimaInteraccion: '2023-11-10', telefono: '3415109918' }
-];
-
-const MOCK_TRATOS: Trato[] = [
-  { id: 't1', nombre: 'Renovación Licencias', monto: 15400, etapa: 'Prospecto', clienteId: '1', empresa: 'TechCorp' },
-  { id: 't2', nombre: 'Expansión de Servidores', monto: 32000, etapa: 'Negociación', clienteId: '2', empresa: 'Global Logistics' },
-  { id: 't3', nombre: 'Consultoría Q4', monto: 8500, etapa: 'Propuesta', clienteId: '3', empresa: 'Finanza Startup' },
-  { id: 't4', nombre: 'Implementación CRM', monto: 45000, etapa: 'Cerrado', clienteId: '4', empresa: 'EcoEnergies' },
-  { id: 't5', nombre: 'Auditoría de Seguridad', monto: 12000, etapa: 'Negociación', clienteId: '1', empresa: 'TechCorp' },
-];
-
-const MOCK_KPIS: Kpi[] = [
-  { titulo: 'Total Clientes', valor: 124, tendencia: 12.5, icono: 'users' },
-  { titulo: 'Tratos Abiertos', valor: 45, tendencia: 5.2, icono: 'briefcase' },
-  { titulo: 'Ingresos Mensuales', valor: '$45,200', tendencia: 8.4, icono: 'dollar-sign' },
-  { titulo: 'Tareas Pendientes', valor: 12, tendencia: -2.1, icono: 'check-circle' },
-];
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
 
-  private clientesSubject = new BehaviorSubject<Cliente[]>(MOCK_CLIENTES);
+  private apiUrl = 'http://localhost:8080/api';
+
+  private clientesSubject = new BehaviorSubject<Cliente[]>([]);
   public clientes$ = this.clientesSubject.asObservable();
 
   private busquedaGlobalSubject = new BehaviorSubject<string>('');
   public busquedaGlobal$ = this.busquedaGlobalSubject.asObservable();
 
-  private tratosSubject = new BehaviorSubject<Trato[]>(MOCK_TRATOS);
+  private avatarAdminSubject = new BehaviorSubject<string>('https://i.pravatar.cc/150?img=11');
+  public avatarAdmin$ = this.avatarAdminSubject.asObservable();
+
+  private nombreAdminSubject = new BehaviorSubject<string>('Administrador');
+  public nombreAdmin$ = this.nombreAdminSubject.asObservable();
+
+  private tratosSubject = new BehaviorSubject<Trato[]>([]);
   public tratos$ = this.tratosSubject.asObservable();
 
-  constructor() { }
+  constructor(private http: HttpClient) { 
+    this.refreshClientes();
+    this.refreshTratos();
+  }
+
+  refreshClientes() {
+    this.http.get<Cliente[]>(`${this.apiUrl}/clientes`).subscribe({
+      next: data => this.clientesSubject.next(data),
+      error: err => console.error('Error al cargar clientes:', err)
+    });
+  }
 
   getClientes(): Observable<Cliente[]> {
-    // Al suscribirse, enviamos la emisión actual con un pequeño delay inicial mockeado
-    return this.clientes$.pipe(delay(200));
+    return this.clientes$;
   }
 
   addCliente(nuevoCliente: Cliente) {
-    const actuales = this.clientesSubject.getValue();
-    this.clientesSubject.next([nuevoCliente, ...actuales]);
+    this.http.post<Cliente>(`${this.apiUrl}/clientes`, nuevoCliente).subscribe(res => {
+      this.refreshClientes();
+    });
+  }
+
+  updateCliente(actualizado: Cliente) {
+    this.http.put<Cliente>(`${this.apiUrl}/clientes/${actualizado.id}`, actualizado).subscribe(res => {
+      this.refreshClientes();
+    });
+  }
+
+  refreshTratos() {
+    this.http.get<Trato[]>(`${this.apiUrl}/tratos`).subscribe({
+      next: data => this.tratosSubject.next(data),
+      error: err => console.error('Error al cargar tratos:', err)
+    });
   }
 
   getTratos(): Observable<Trato[]> {
-    return this.tratos$.pipe(delay(200));
+    return this.tratos$;
   }
 
   addTrato(nuevo: Trato) {
-    const actuales = this.tratosSubject.getValue();
-    this.tratosSubject.next([nuevo, ...actuales]);
+    this.http.post<Trato>(`${this.apiUrl}/tratos`, nuevo).subscribe(res => {
+      this.refreshTratos();
+    });
   }
 
   updateTratoEtapa(id: string, etapa: EtapaTrato) {
-    const actuales = this.tratosSubject.getValue();
-    const index = actuales.findIndex(t => t.id === id);
-    if (index !== -1) {
-      actuales[index].etapa = etapa;
-      this.tratosSubject.next([...actuales]);
-    }
+    this.http.put<Trato>(`${this.apiUrl}/tratos/${id}/etapa`, { etapa }).subscribe(res => {
+      this.refreshTratos();
+    });
   }
 
   getKpis(): Observable<Kpi[]> {
-    return of(MOCK_KPIS).pipe(delay(200));
+    return this.http.get<Kpi[]>(`${this.apiUrl}/kpis`);
   }
 
   setBusquedaGlobal(term: string) {
     this.busquedaGlobalSubject.next(term);
+  }
+
+  setAvatarAdmin(avatar: string) {
+    this.avatarAdminSubject.next(avatar);
+  }
+
+  setNombreAdmin(nombre: string) {
+    this.nombreAdminSubject.next(nombre);
   }
 }
