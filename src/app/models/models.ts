@@ -1,5 +1,5 @@
 export interface Cliente {
-  id: string;
+  id?: number;
   nombre: string;
   empresa: string;
   avatar: string;
@@ -10,13 +10,20 @@ export interface Cliente {
   telefono?: string;
 }
 
-export type EtapaTrato = 'Prospecto' | 'Negociación' | 'Propuesta' | 'Cerrado';
+export interface PipelineStage {
+  id?: number;
+  nombre: string;
+  color: string;
+  orden: number;
+}
+
+export type EtapaTrato = string;
 
 export interface Trato {
-  id: string;
+  id?: string;
   nombre: string;
   monto: number;
-  etapa: EtapaTrato;
+  etapa: string;
   clienteId: string;
   empresa: string;
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DataService } from '../../services/mock-data.service';
+import { DataService } from '../../services/api.service';
 import { Cliente } from '../../models/models';
 import Swal from 'sweetalert2';
 
@@ -16,7 +16,7 @@ export class DirectorioComponent implements OnInit {
   clienteSeleccionado: Cliente | null = null;
   
   esModoEdicion: boolean = false;
-  idEdicion: string | undefined;
+  idEdicion: number | undefined;
   
   nuevoClienteData: {
     nombre: string;
@@ -24,12 +24,14 @@ export class DirectorioComponent implements OnInit {
     email: string;
     telefono: string;
     estado: 'Activo' | 'Inactivo';
+    genero: 'Masculino' | 'Femenino';
   } = {
     nombre: '',
     empresa: '',
     email: '',
     telefono: '',
-    estado: 'Activo'
+    estado: 'Activo',
+    genero: 'Masculino'
   };
 
   constructor(private dataService: DataService) {}
@@ -56,7 +58,7 @@ export class DirectorioComponent implements OnInit {
     this.esModoEdicion = false;
     this.idEdicion = undefined;
     this.mostrarModalNuevoCliente = true;
-    this.nuevoClienteData = { nombre: '', empresa: '', email: '', telefono: '', estado: 'Activo' };
+    this.nuevoClienteData = { nombre: '', empresa: '', email: '', telefono: '', estado: 'Activo', genero: 'Masculino' };
   }
 
   editarCliente(cliente: Cliente) {
@@ -67,7 +69,8 @@ export class DirectorioComponent implements OnInit {
       empresa: cliente.empresa,
       email: cliente.email || '',
       telefono: cliente.telefono || '',
-      estado: cliente.estado as 'Activo' | 'Inactivo'
+      estado: cliente.estado as 'Activo' | 'Inactivo',
+      genero: cliente.avatar.includes('avatar-f') ? 'Femenino' : 'Masculino'
     };
     this.cerrarDetalleCliente();
     this.mostrarModalNuevoCliente = true;
@@ -83,7 +86,7 @@ export class DirectorioComponent implements OnInit {
       return;
     }
 
-    if (this.esModoEdicion && this.idEdicion) {
+    if (this.esModoEdicion && this.idEdicion !== undefined) {
       const clienteOriginal = this.clientes.find(c => c.id === this.idEdicion);
       const actualizado: Cliente = {
         id: this.idEdicion,
@@ -92,27 +95,68 @@ export class DirectorioComponent implements OnInit {
         email: this.nuevoClienteData.email,
         telefono: this.nuevoClienteData.telefono,
         estado: this.nuevoClienteData.estado,
-        avatar: clienteOriginal?.avatar || 'https://i.pravatar.cc/150?img=1',
+        avatar: this.nuevoClienteData.genero === 'Femenino' ? 'assets/avatar-f.jfif' : 'assets/avatar-m.jfif',
         ultimaInteraccion: clienteOriginal?.ultimaInteraccion || new Date().toISOString().split('T')[0]
       };
-      this.dataService.updateCliente(actualizado);
-      Swal.fire('¡Actualizado!', `${actualizado.nombre} ha sido actualizado exitosamente.`, 'success');
+      
+      this.dataService.updateCliente(actualizado).subscribe({
+        next: () => {
+          Swal.fire('¡Actualizado!', `${actualizado.nombre} ha sido actualizado exitosamente.`, 'success');
+          this.cerrarModalNuevoCliente();
+        },
+        error: (err) => {
+          Swal.fire('Error', 'Hubo un problema al actualizar el cliente. Verifica si el email ya existe.', 'error');
+        }
+      });
+      
     } else {
       const nuevo: Cliente = {
-        id: Math.random().toString(36).substr(2, 9),
         nombre: this.nuevoClienteData.nombre,
         empresa: this.nuevoClienteData.empresa,
         email: this.nuevoClienteData.email,
         telefono: this.nuevoClienteData.telefono,
         estado: this.nuevoClienteData.estado,
-        avatar: 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70),
+        avatar: this.nuevoClienteData.genero === 'Femenino' ? 'assets/avatar-f.jfif' : 'assets/avatar-m.jfif',
         ultimaInteraccion: new Date().toISOString().split('T')[0]
       };
-      this.dataService.addCliente(nuevo);
-      Swal.fire('¡Cliente Agendado!', `${nuevo.nombre} ha sido añadido al directorio exitosamente.`, 'success');
-    }
 
-    this.cerrarModalNuevoCliente();
+      this.dataService.addCliente(nuevo).subscribe({
+        next: () => {
+          Swal.fire('¡Cliente Agendado!', `${nuevo.nombre} ha sido añadido al directorio exitosamente.`, 'success');
+          this.cerrarModalNuevoCliente();
+        },
+        error: (err) => {
+          Swal.fire('Error', 'No se pudo guardar el cliente. Es posible que el email ya esté registrado.', 'error');
+        }
+      });
+    }
+  }
+
+  eliminarCliente(id: number | undefined) {
+    if(id === undefined) return;
+    
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¡No podrás revertir esto! El cliente será eliminado.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.dataService.deleteCliente(id).subscribe({
+          next: () => {
+            Swal.fire('¡Eliminado!', 'El cliente ha sido eliminado.', 'success');
+            this.cerrarDetalleCliente();
+          },
+          error: (err) => {
+            Swal.fire('Error', 'No se pudo eliminar el cliente.', 'error');
+          }
+        });
+      }
+    });
   }
 
   verDetalleCliente(cliente: Cliente) {

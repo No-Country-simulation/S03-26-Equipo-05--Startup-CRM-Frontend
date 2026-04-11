@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from './services/auth.service';
-import { DataService } from './services/mock-data.service';
+import { DataService } from './services/api.service';
 import { NotificationService, AppNotification } from './services/notification.service';
 import { ThemeService } from './services/theme.service';
 import Swal from 'sweetalert2';
 import { PhonePipe } from './pipes/phone.pipe';
+import { Router, NavigationEnd } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -21,13 +22,19 @@ export class AppComponent implements OnInit {
   notifications: AppNotification[] = [];
 
   isRegistering: boolean = false;
+  isForgotPasswordMode: boolean = false;
+  isResetPasswordMode: boolean = false;
+  mostrarPassword: boolean = false;
+  resetToken: string = '';
+
   nombreAdmin: string = 'Administrador';
-  avatarAdmin: string = 'https://i.pravatar.cc/150?img=11';
+  avatarAdmin: string = 'https://ui-avatars.com/api/?name=Admin&background=4A2B65&color=fff';
   loginData = {
     nombre: '',
     email: 'admin@sagrada.com',
     password: ''
   };
+  newPassword: string = '';
   isSubmitting: boolean = false;
   zoomActivo: boolean = false;
   altoContrasteActivo: boolean = false;
@@ -36,10 +43,25 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private dataService: DataService,
     private notifService: NotificationService,
-    private themeService: ThemeService
-  ) { }
+    private themeService: ThemeService,
+    private router: Router
+  ) { 
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        if (this.zoomActivo) {
+          // Esperamos un tick para asegurar que el nuevo DOM (componentes) ya se redibujó
+          setTimeout(() => this.refreshLupa(), 300);
+        }
+      }
+    });
+  }
 
   ngOnInit() {
+    if (this.authService.getToken()) {
+      this.isLoggedIn = true;
+      this.loadUserProfile();
+    }
+
     this.notifService.notifications$.subscribe(notifs => {
       this.notifications = notifs;
       this.unreadCount = notifs.filter(n => !n.read).length;
@@ -54,16 +76,178 @@ export class AppComponent implements OnInit {
         this.nombreAdmin = nombre;
       }
     });
+
+    // Detectar reset de contraseña por URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('resetToken');
+    if (token) {
+      this.resetToken = token;
+      this.isResetPasswordMode = true;
+      this.isLoggedIn = false;
+      // Limpiar URL para que no quede el token expuesto al refrescar
+      window.history.pushState({}, document.title, window.location.pathname);
+    }
   }
+
+  loadUserProfile() {
+    this.dataService.getProfile().subscribe({
+      next: (profile) => {
+        if (profile.avatar) {
+          this.dataService.setAvatarAdmin(profile.avatar);
+        } else if (profile.nombre) {
+          // Generar avatar con iniciales si no hay foto
+          const initialsAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.nombre)}&background=4A2B65&color=fff&bold=true`;
+          this.dataService.setAvatarAdmin(initialsAvatar);
+        }
+        
+        if (profile.nombre) {
+          this.dataService.setNombreAdmin(profile.nombre);
+        }
+      },
+      error: (err) => console.error('No se pudo cargar el perfil del usuario', err)
+    });
+  }
+
+  private lensElement: HTMLElement | null = null;
+  private clonedContent: HTMLElement | null = null;
+  private mouseMoveListener: ((e: MouseEvent) => void) | null = null;
+  private clickCloseListener: ((e: MouseEvent) => void) | null = null;
+  public zoomScale: number = 2.0;
+  public lensSize: number = 250;
 
   toggleZoom() {
     this.zoomActivo = !this.zoomActivo;
-    const bodyStyles = document.body.style as any;
+    
     if (this.zoomActivo) {
-      bodyStyles.zoom = "1.15";
+      this.iniciarLupa();
     } else {
-      bodyStyles.zoom = "1";
+      this.detenerLupa();
     }
+  }
+
+  private iniciarLupa() {
+    const mainContent = document.getElementById('app-main-content');
+    if (!mainContent) return;
+
+    // Crear la lente de la lupa
+    this.lensElement = document.createElement('div');
+    this.lensElement.style.position = 'fixed';
+    this.lensElement.style.border = '4px solid #4A2B65'; // sagrada-purple-dark
+    this.lensElement.style.borderRadius = '50%';
+    this.lensElement.style.width = this.lensSize + 'px';
+    this.lensElement.style.height = this.lensSize + 'px';
+    this.lensElement.style.pointerEvents = 'none';
+    this.lensElement.style.overflow = 'hidden';
+    this.lensElement.style.zIndex = '9999';
+    this.lensElement.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.5), 0 10px 25px rgba(0,0,0,0.5)';
+    this.lensElement.style.backgroundColor = '#fff';
+
+    this.refreshLupa(true);
+    document.body.appendChild(this.lensElement);
+    
+    this.mouseMoveListener = this.onMouseMove.bind(this);
+    document.addEventListener('mousemove', this.mouseMoveListener);
+
+    // Añadir listener para salir con un click, esperando un poco para evitar que el click de activación lo dispare
+    setTimeout(() => {
+      this.clickCloseListener = () => {
+        this.zoomActivo = false;
+        this.detenerLupa();
+      };
+      document.addEventListener('click', this.clickCloseListener);
+    }, 50);
+  }
+
+  private refreshLupa(initial: boolean = false) {
+    if (!this.zoomActivo || !this.lensElement) return;
+    const mainContent = document.getElementById('app-main-content');
+    if (!mainContent) return;
+
+    // Clonar el contenido actual
+    const newClone = mainContent.cloneNode(true) as HTMLElement;
+    newClone.style.position = 'absolute';
+    newClone.style.width = mainContent.offsetWidth + 'px';
+    newClone.style.height = mainContent.offsetHeight + 'px';
+    newClone.style.transformOrigin = '0 0';
+    newClone.style.pointerEvents = 'none';
+
+    // Sincronizar las posiciones de scroll del DOM original al clonado
+    const originalScrollables = mainContent.querySelectorAll('*');
+    const clonedScrollables = newClone.querySelectorAll('*');
+    for (let i = 0; i < originalScrollables.length; i++) {
+        if (originalScrollables[i].scrollTop > 0 || originalScrollables[i].scrollLeft > 0) {
+            clonedScrollables[i].scrollTop = originalScrollables[i].scrollTop;
+            clonedScrollables[i].scrollLeft = originalScrollables[i].scrollLeft;
+        }
+    }
+    
+    // Remover IDs del clon para evitar conflictos
+    const allClonedElements = newClone.querySelectorAll('*');
+    allClonedElements.forEach(el => el.removeAttribute('id'));
+
+    if (initial) {
+      this.clonedContent = newClone;
+      this.lensElement.appendChild(this.clonedContent);
+    } else {
+      // Reemplazar el viejo clon por el nuevo conservando el transform base (aunque onMouseMove lo sobreescribirá)
+      if (this.clonedContent && this.clonedContent.parentNode) {
+        newClone.style.transform = this.clonedContent.style.transform;
+        this.lensElement.replaceChild(newClone, this.clonedContent);
+        this.clonedContent = newClone;
+      }
+    }
+  }
+
+
+
+  private detenerLupa() {
+    if (this.lensElement && this.lensElement.parentNode) {
+      this.lensElement.parentNode.removeChild(this.lensElement);
+    }
+    this.lensElement = null;
+    this.clonedContent = null;
+    
+    if (this.mouseMoveListener) {
+      document.removeEventListener('mousemove', this.mouseMoveListener);
+      this.mouseMoveListener = null;
+    }
+    
+    if (this.clickCloseListener) {
+      document.removeEventListener('click', this.clickCloseListener);
+      this.clickCloseListener = null;
+    }
+  }
+
+  private onMouseMove(e: MouseEvent) {
+    if (!this.zoomActivo || !this.lensElement || !this.clonedContent) return;
+
+    // Sincronizar el scroll en tiempo real
+    const mainContent = document.getElementById('app-main-content');
+    if (mainContent) {
+      const selectors = '.overflow-y-scroll, .overflow-y-auto, .overflow-auto';
+      const origScrollables = mainContent.querySelectorAll(selectors);
+      const cloneScrollables = this.clonedContent.querySelectorAll(selectors);
+      for (let i = 0; i < origScrollables.length; i++) {
+        if (cloneScrollables[i]) {
+          cloneScrollables[i].scrollTop = origScrollables[i].scrollTop;
+          cloneScrollables[i].scrollLeft = origScrollables[i].scrollLeft;
+        }
+      }
+    }
+
+    const x = e.clientX;
+    const y = e.clientY;
+    const halfLens = this.lensSize / 2;
+
+    // Posicionar la lente en el cursor
+    this.lensElement.style.left = (x - halfLens) + 'px';
+    this.lensElement.style.top = (y - halfLens) + 'px';
+
+    // Calcular la posición del clon para que haga zoom al centro
+    const rx = -x * this.zoomScale + halfLens;
+    const ry = -y * this.zoomScale + halfLens;
+
+    this.clonedContent.style.transform = `translate(${rx}px, ${ry}px) scale(${this.zoomScale})`;
   }
 
   toggleAltoContraste() {
@@ -165,6 +349,7 @@ export class AppComponent implements OnInit {
       next: (res) => {
         this.isSubmitting = false;
         this.isLoggedIn = true;
+        this.loadUserProfile(); // Cargar perfil inmediatamente tras login
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -190,10 +375,71 @@ export class AppComponent implements OnInit {
     });
   }
 
+  toggleForgotPassword() {
+    this.isForgotPasswordMode = !this.isForgotPasswordMode;
+    this.isRegistering = false;
+  }
+
+  doForgotPassword() {
+    if (!this.loginData.email) {
+      Swal.fire('Atención', 'Ingresa tu correo para recibir el enlace', 'warning');
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.authService.forgotPassword(this.loginData.email).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        Swal.fire({
+          icon: 'success',
+          title: 'Correo Enviado',
+          text: 'Revisa tu bandeja de entrada para restablecer tu contraseña.',
+          confirmButtonColor: '#4A2B65'
+        });
+        this.isForgotPasswordMode = false;
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        Swal.fire('Error', 'No pudimos procesar tu solicitud. Verifica tu correo.', 'error');
+      }
+    });
+  }
+
+  doResetPassword() {
+    if (!this.newPassword) {
+      Swal.fire('Atención', 'Ingresa una nueva contraseña', 'warning');
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.authService.resetPassword({
+      token: this.resetToken,
+      newPassword: this.newPassword
+    }).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        Swal.fire({
+          icon: 'success',
+          title: 'Contraseña Actualizada',
+          text: 'Ya puedes iniciar sesión con tu nueva clave.',
+          confirmButtonColor: '#4A2B65'
+        });
+        this.isResetPasswordMode = false;
+        this.newPassword = '';
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        Swal.fire('Error', err.error?.message || 'Token inválido o expirado.', 'error');
+      }
+    });
+  }
+
+
   doLogout() {
     this.mostrarMenuPerfil = false;
     this.isLoggedIn = false;
     this.loginData.password = '';
+    this.authService.logout();
     Swal.fire({
       toast: true,
       position: 'top-end',

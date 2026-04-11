@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { DataService } from '../../services/mock-data.service';
+import { DataService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
-import { EtapaTrato } from '../../models/models';
+import { EtapaTrato, PipelineStage } from '../../models/models';
 import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
 
@@ -36,13 +36,9 @@ export class ConfiguracionComponent implements OnInit {
   empresa: DatosEmpresa = { nombreComercial: '', razonSocial: '', cuit: '', direccion: '', telefono: '', sitioWeb: '' };
 
   // Etapas del Pipeline
-  etapasPipeline: { nombre: string; color: string }[] = [
-    { nombre: 'Prospecto', color: 'bg-blue-500' },
-    { nombre: 'Negociación', color: 'bg-amber-500' },
-    { nombre: 'Propuesta', color: 'bg-purple-500' },
-    { nombre: 'Cerrado', color: 'bg-emerald-500' }
-  ];
+  etapasPipeline: PipelineStage[] = [];
   nuevaEtapa: string = '';
+  nuevaPassword: string = '';
 
   // Modo Oscuro Automático
   isDarkModeAutomatic: boolean = false;
@@ -67,10 +63,11 @@ export class ConfiguracionComponent implements OnInit {
     this.isDarkModeAutomatic = this.themeService.isDarkModeAutomatic;
     this.cargarPerfil();
     this.cargarEmpresa();
+    this.cargarEtapas();
   }
 
   cargarPerfil(): void {
-    this.http.get<PerfilAdmin>('http://localhost:8080/api/admin/profile').subscribe({
+    this.dataService.getProfile().subscribe({
       next: (data) => {
         this.perfil = data;
         if (data.avatar) {
@@ -85,9 +82,16 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   cargarEmpresa(): void {
-    this.http.get<DatosEmpresa>('http://localhost:8080/api/company').subscribe({
+    this.dataService.getCompany().subscribe({
       next: (data) => this.empresa = data,
       error: () => console.error('Error al cargar Datos de Empresa')
+    });
+  }
+
+  cargarEtapas(): void {
+    this.dataService.getPipelineStages().subscribe({
+      next: (stages) => this.etapasPipeline = stages,
+      error: () => console.error('Error al cargar Etapas')
     });
   }
 
@@ -113,7 +117,7 @@ export class ConfiguracionComponent implements OnInit {
     this.seccionActiva = seccion;
   }
 
-  guardarPerfil(): void {
+  async guardarPerfil() {
     if (this.perfil.telefono) {
       localStorage.setItem('whatsapp_phone', this.perfil.telefono);
     }
@@ -122,12 +126,44 @@ export class ConfiguracionComponent implements OnInit {
       this.dataService.setNombreAdmin(this.perfil.nombre);
     }
 
-    this.http.put('http://localhost:8080/api/admin/profile', this.perfil).subscribe({
-      next: () => {
-        Swal.fire({ icon: 'success', title: '¡Perfil Actualizado!', confirmButtonColor: '#4A2B65', timer: 3000 });
-      },
-      error: () => Swal.fire('Error', 'No se pudo actualizar el perfil', 'error')
-    });
+    try {
+      // 1. Actualizar datos generales de perfil
+      await this.dataService.updateProfile(this.perfil).toPromise();
+
+      // 2. Si hay una nueva contraseña escrita, procesar el cambio
+      if (this.nuevaPassword && this.nuevaPassword.trim() !== '') {
+        const { value: passActual } = await Swal.fire({
+          title: 'Confirmar Cambio',
+          input: 'password',
+          inputLabel: 'Ingresa tu contraseña actual para confirmar la nueva',
+          inputPlaceholder: 'Contraseña Actual',
+          showCancelButton: true,
+          confirmButtonColor: '#4A2B65'
+        });
+
+        if (passActual) {
+          await this.dataService.changePassword(passActual, this.nuevaPassword).toPromise();
+          this.nuevaPassword = ''; // Limpiar el campo
+          Swal.fire({
+            icon: 'success',
+            title: '¡Todo Guardado!',
+            text: 'Tu perfil y contraseña han sido actualizados.',
+            confirmButtonColor: '#4A2B65'
+          });
+        } else {
+          Swal.fire('Perfil Guardado', 'Se guardaron tus datos pero la contraseña NO cambió (falta confirmación).', 'info');
+        }
+      } else {
+        Swal.fire({ 
+          icon: 'success', 
+          title: '¡Perfil Actualizado!', 
+          confirmButtonColor: '#4A2B65', 
+          timer: 2000 
+        });
+      }
+    } catch (error: any) {
+      Swal.fire('Error', error.error?.message || 'No se pudieron guardar los cambios', 'error');
+    }
   }
 
   onAvatarChange(event: Event): void {
@@ -148,25 +184,33 @@ export class ConfiguracionComponent implements OnInit {
       return;
     }
 
-    // Leer como Data URL (base64) para preview inmediato
+    // 1. Mostrar preview inmediato
     const reader = new FileReader();
     reader.onload = () => {
       this.perfil.avatar = reader.result as string;
-      this.dataService.setAvatarAdmin(this.perfil.avatar);
-      Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'success',
-        title: 'Foto de perfil actualizada',
-        showConfirmButton: false,
-        timer: 2000
-      });
     };
     reader.readAsDataURL(archivo);
+
+    // 2. Subir archivo real al servidor
+    this.dataService.uploadAvatar(archivo).subscribe({
+      next: (res) => {
+        this.perfil.avatar = res.url;
+        this.dataService.setAvatarAdmin(res.url);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Foto de perfil subida al servidor',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      },
+      error: () => Swal.fire('Error', 'No se pudo subir la imagen al servidor', 'error')
+    });
   }
 
   guardarEmpresa(): void {
-    this.http.put('http://localhost:8080/api/company', this.empresa).subscribe({
+    this.dataService.updateCompany(this.empresa).subscribe({
       next: () => {
         Swal.fire({ icon: 'success', title: '¡Datos de Empresa Guardados!', confirmButtonColor: '#4A2B65', timer: 3000 });
       },
@@ -178,16 +222,27 @@ export class ConfiguracionComponent implements OnInit {
     if (!this.nuevaEtapa.trim()) return;
     const colores = ['bg-rose-500', 'bg-cyan-500', 'bg-orange-500', 'bg-fuchsia-500', 'bg-lime-500'];
     const colorRandom = colores[this.etapasPipeline.length % colores.length];
-    this.etapasPipeline.push({ nombre: this.nuevaEtapa.trim(), color: colorRandom });
-    this.nuevaEtapa = '';
+    
+    const nueva: PipelineStage = {
+      nombre: this.nuevaEtapa.trim(),
+      color: colorRandom,
+      orden: this.etapasPipeline.length
+    };
 
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'success',
-      title: 'Etapa agregada al pipeline',
-      showConfirmButton: false,
-      timer: 2000
+    this.dataService.savePipelineStage(nueva).subscribe({
+      next: (saved) => {
+        this.etapasPipeline.push(saved);
+        this.nuevaEtapa = '';
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Etapa guardada permanentemente',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      },
+      error: () => Swal.fire('Error', 'No se pudo guardar la etapa', 'error')
     });
   }
 
@@ -207,8 +262,14 @@ export class ConfiguracionComponent implements OnInit {
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     }).then(result => {
-      if (result.isConfirmed) {
-        this.etapasPipeline.splice(index, 1);
+      if (result.isConfirmed && etapa.id) {
+        this.dataService.deletePipelineStage(etapa.id).subscribe({
+          next: () => {
+            this.etapasPipeline.splice(index, 1);
+            Swal.fire('Eliminado', 'Etapa borrada de la base de datos', 'success');
+          },
+          error: () => Swal.fire('Error', 'No se pudo eliminar la etapa', 'error')
+        });
       }
     });
   }

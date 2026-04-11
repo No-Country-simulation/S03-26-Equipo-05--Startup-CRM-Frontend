@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Kpi } from 'src/app/models/models';
-import { DataService } from 'src/app/services/mock-data.service';
+import { DataService } from 'src/app/services/api.service';
 import { KanbanBoardComponent } from '../../kanban-board.component';
 
 @Component({

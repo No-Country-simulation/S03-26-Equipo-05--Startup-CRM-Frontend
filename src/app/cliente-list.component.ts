@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DataService } from './services/mock-data.service';
+import { DataService } from './services/api.service';
 import { Cliente } from './models/models';
 import { NotificationService } from './services/notification.service';
 import Swal from 'sweetalert2';

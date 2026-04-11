@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { delay, map, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 export interface LoginPayload {
   email: string;
@@ -17,29 +17,22 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   register(payload: any): Observable<any> {
-    console.log('📝 Solicitud de Registro Mockeada:', payload.email);
-    // return this.http.post<any>(`${this.apiUrl}/register`, payload);
-    return of({ success: true, message: 'Mock register success' }).pipe(delay(500));
+    return this.http.post<any>(`${this.apiUrl}/register`, payload).pipe(
+      tap(response => {
+        if (response && response.token) {
+          localStorage.setItem('token', response.token);
+        }
+      })
+    );
   }
 
   login(payload: LoginPayload): Observable<any> {
-    console.log('🔒 Solicitud de Login Mockeada:', payload.email);
-
-    const mockResponse = {
-      token: 'mock-jwt-token-12345'
-    };
-
-    return of(mockResponse).pipe(
-      delay(800),
+    return this.http.post<any>(`${this.apiUrl}/login`, payload).pipe(
       tap(response => {
-        localStorage.setItem('token', response.token);
-        console.log('✅ Login Exitoso (MOCK), token guardado en localStorage');
-      }),
-      map(response => ({
-        success: true,
-        token: response.token,
-        user: { email: payload.email, role: 'admin' }
-      }))
+        if (response && response.token) {
+          localStorage.setItem('token', response.token);
+        }
+      })
     );
   }
 
@@ -49,6 +42,14 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('token');
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/reset-password`, payload);
   }
 }
 

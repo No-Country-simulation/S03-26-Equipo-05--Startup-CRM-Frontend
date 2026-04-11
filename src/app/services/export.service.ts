@@ -9,8 +9,8 @@ export class ExportService {
   exportarClientesCSV(clientes: Cliente[]): void {
     const encabezados = ['ID', 'Nombre', 'Empresa', 'Ciudad', 'Estado', 'Email', 'Teléfono', 'Última Interacción'];
 
-    const filas = clientes.map(cliente => [
-      cliente.id,
+    const filas: string[][] = clientes.map(cliente => [
+      cliente.id !== undefined ? cliente.id.toString() : '',
       cliente.nombre,
       cliente.empresa,
       cliente.ciudad || '',
@@ -27,8 +27,8 @@ export class ExportService {
   exportarTratosCSV(tratos: Trato[]): void {
     const encabezados = ['ID', 'Nombre', 'Empresa', 'Etapa', 'Monto (USD)'];
 
-    const filas = tratos.map(trato => [
-      trato.id,
+    const filas: string[][] = tratos.map(trato => [
+      trato.id || '',
       trato.nombre,
       trato.empresa,
       trato.etapa,
