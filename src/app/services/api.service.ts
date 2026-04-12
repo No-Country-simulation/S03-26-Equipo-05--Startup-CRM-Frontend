@@ -152,4 +152,9 @@ export class DataService {
     formData.append('file', file);
     return this.http.post<{ url: string }>(`${this.apiUrl}/upload/avatar`, formData);
   }
+
+  // --- Notifications / Email ---
+  enviarEmail(payload: { to: string; subject: string; body: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/notifications/email`, payload);
+  }
 }

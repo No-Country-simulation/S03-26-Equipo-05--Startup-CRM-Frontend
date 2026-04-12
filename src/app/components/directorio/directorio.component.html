@@ -77,12 +77,19 @@
 
     <!-- Body Card -->
     <div class="p-6 space-y-4">
-      <div *ngIf="clienteSeleccionado.email" class="flex items-center gap-3 text-sm text-slate-600">
-        <div class="p-2 bg-slate-50 rounded-lg text-slate-400">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        <div class="flex items-center justify-between gap-3 w-full">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-slate-50 rounded-lg text-slate-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            </div>
+            <span class="truncate">{{ clienteSeleccionado.email }}</span>
+          </div>
+          <button (click)="abrirModalCorreo(clienteSeleccionado)" class="flex-shrink-0 p-2 text-sagrada-purple hover:bg-sagrada-purple/10 rounded-lg transition-colors border border-sagrada-purple/20 group/btn" title="Redactar Correo">
+            <svg class="w-5 h-5 group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+          </button>
         </div>
-        <span class="truncate">{{ clienteSeleccionado.email }}</span>
-      </div>
       
       <div *ngIf="clienteSeleccionado.telefono" class="flex items-center gap-3 text-sm text-slate-600">
         <div class="p-2 bg-slate-50 rounded-lg text-slate-400">
@@ -173,6 +180,60 @@
         <button (click)="guardarNuevoCliente()" class="bg-sagrada-purple hover:bg-sagrada-purple-dark text-white px-6 py-2.5 rounded-xl shadow-md shadow-purple-200 font-semibold transition-all transform hover:-translate-y-0.5">
           {{ esModoEdicion ? 'Guardar Cambios' : 'Guardar Cliente' }}
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: REDACTAR CORREO -->
+<div *ngIf="mostrarModalCorreo" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/70 backdrop-blur-md p-4 animate-fade-in-up">
+  <div class="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+    
+    <!-- Header Decorativo -->
+    <div class="h-2 bg-gradient-to-r from-sagrada-purple via-sagrada-gold to-sagrada-purple"></div>
+    
+    <button (click)="cerrarModalCorreo()" class="absolute top-6 right-6 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+
+    <div class="p-10">
+      <div class="flex items-center gap-4 mb-8">
+        <div class="w-14 h-14 bg-sagrada-purple/10 text-sagrada-purple rounded-2xl flex items-center justify-center shadow-inner">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        </div>
+        <div>
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight">Enviar Correo</h2>
+          <p class="text-sm text-slate-500 font-medium">Destinatario: <span class="text-sagrada-purple font-bold">{{ datosCorreo.to }}</span></p>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="relative group">
+          <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Asunto del Mensaje</label>
+          <input type="text" [(ngModel)]="datosCorreo.subject" placeholder="Ej: Información de pedido #123"
+            class="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-sagrada-purple focus:ring-4 focus:ring-sagrada-purple/5 outline-none bg-slate-50/50 transition-all font-semibold text-slate-700">
+        </div>
+
+        <div class="relative group">
+          <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Cuerpo del Correo</label>
+          <textarea [(ngModel)]="datosCorreo.body" rows="6" placeholder="Escribe el contenido aquí..."
+            class="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-sagrada-purple focus:ring-4 focus:ring-sagrada-purple/5 outline-none bg-slate-50/50 transition-all font-medium text-slate-600 resize-none"></textarea>
+        </div>
+
+        <div class="pt-4 flex items-center gap-4">
+          <button (click)="cerrarModalCorreo()" class="flex-1 px-6 py-4 rounded-2xl text-slate-500 font-bold hover:bg-slate-50 transition-colors">
+            Cancelar
+          </button>
+          <button (click)="enviarCorreo()" [disabled]="enviandoCorreo"
+            class="flex-[2] bg-sagrada-purple hover:bg-sagrada-purple-dark text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-purple-200 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:transform-none">
+            <span *ngIf="!enviandoCorreo">ENVIAR CORREO</span>
+            <span *ngIf="enviandoCorreo" class="flex items-center gap-2">
+              <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              ENVIANDO...
+            </span>
+            <svg *ngIf="!enviandoCorreo" class="w-5 h-5 rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>

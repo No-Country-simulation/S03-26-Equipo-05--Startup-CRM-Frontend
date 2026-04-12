@@ -9,29 +9,45 @@
 
             <div class="flex flex-wrap items-center gap-3 print:hidden">
                 <!-- Filtros rápidos -->
-                <div class="bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl flex gap-1 mr-2 xl:mr-4 border border-slate-200 dark:border-slate-700 shadow-inner" role="group" aria-label="Filtros de tiempo para métricas">
+                <div class="relative group bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl flex gap-1 mr-2 xl:mr-4 border border-slate-200 dark:border-slate-700 shadow-inner" role="group" aria-label="Filtros de tiempo para métricas">
                     <button (click)="cambiarFiltro('todos')" [attr.aria-pressed]="filtroActual === 'todos'" [class.bg-white]="filtroActual === 'todos'" [class.dark:bg-slate-700]="filtroActual === 'todos'" [class.shadow-sm]="filtroActual === 'todos'" [class.text-sagrada-purple-dark]="filtroActual === 'todos'" class="px-3 py-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 rounded-lg transition-all focus:outline-none">Todos</button>
                     <button (click)="cambiarFiltro('mes_anterior')" [attr.aria-pressed]="filtroActual === 'mes_anterior'" [class.bg-white]="filtroActual === 'mes_anterior'" [class.dark:bg-slate-700]="filtroActual === 'mes_anterior'" [class.shadow-sm]="filtroActual === 'mes_anterior'" [class.text-sagrada-purple-dark]="filtroActual === 'mes_anterior'" class="px-3 py-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 rounded-lg transition-all focus:outline-none">Mes Anterior</button>
                     <button (click)="cambiarFiltro('este_mes')" [attr.aria-pressed]="filtroActual === 'este_mes'" [class.bg-white]="filtroActual === 'este_mes'" [class.dark:bg-slate-700]="filtroActual === 'este_mes'" [class.shadow-sm]="filtroActual === 'este_mes'" [class.text-sagrada-purple-dark]="filtroActual === 'este_mes'" class="px-3 py-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 rounded-lg transition-all focus:outline-none">Este Mes</button>
+                    
+                    <!-- Tooltip -->
+                    <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+                        Filtrar datos por periodo de tiempo
+                    </div>
                 </div>
 
-                <button (click)="imprimirDashboard()" aria-label="Imprimir informe de métricas"
-                    class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-sagrada-purple transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sagrada-purple/50">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
-                        </path>
-                    </svg>
-                    Imprimir
-                </button>
-                <button (click)="exportarDatos()" aria-label="Exportar datos a Excel o CSV"
-                    class="flex items-center gap-2 px-4 py-2 bg-sagrada-purple text-white font-semibold rounded-xl hover:bg-sagrada-purple-dark transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sagrada-purple/50 focus:ring-offset-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                    Exportar
-                </button>
+                <div class="relative group">
+                    <button (click)="imprimirDashboard()" aria-label="Imprimir informe de métricas"
+                        class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-sagrada-purple transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sagrada-purple/50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                            </path>
+                        </svg>
+                        Imprimir
+                    </button>
+                    <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+                        Generar reporte PDF
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <button (click)="exportarDatos()" aria-label="Exportar datos a Excel o CSV"
+                        class="flex items-center gap-2 px-4 py-2 bg-sagrada-purple text-white font-semibold rounded-xl hover:bg-sagrada-purple-dark transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sagrada-purple/50 focus:ring-offset-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Exportar
+                    </button>
+                    <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+                        Descargar datos en CSV
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -48,7 +64,7 @@
 
         <!-- DATOS KPIs -->
         <div *ngIf="!isLoading" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div *ngFor="let kpi of kpis; let first = first; let i = index"
+            <div *ngFor="let kpi of displayKpis; let first = first; let i = index"
                 class="card-animate-in relative overflow-hidden bg-sagrada-paper p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg transition-all group"
                 [style.animation-delay]="i * 100 + 'ms'"
                 [ngClass]="first ? 'bg-gradient-to-br from-slate-800 to-sagrada-purple-dark text-white border-none shadow-md z-10' : ''">
@@ -58,6 +74,14 @@
 
                 <h3 class="text-xs font-bold uppercase tracking-widest mb-2" [ngClass]="first ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'">{{ kpi.titulo }}</h3>
                 <p class="text-3xl font-black tracking-tight mb-1" [ngClass]="first ? 'text-white drop-shadow-sm' : 'text-slate-800 dark:text-white'">{{ kpi.valor }}</p>
+                
+                <!-- Tooltip para KPIs específicos -->
+                <div *ngIf="kpi.titulo.includes('TICKET')" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[9px] p-2 rounded shadow-lg z-20 pointer-events-none w-32 border border-slate-700">
+                    Ingreso promedio obtenido por cada trato en etapa 'Cerrado'.
+                </div>
+                <div *ngIf="kpi.titulo.includes('TASA')" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[9px] p-2 rounded shadow-lg z-20 pointer-events-none w-32 border border-slate-700">
+                    Porcentaje de eficacia al convertir tratos en ventas finales.
+                </div>
                 <div class="mt-3 flex items-center gap-2">
                     <span class="text-[11px] font-bold px-2 py-1 rounded-md flex items-center gap-1 shadow-sm transition-colors"
                         [ngClass]="kpi.tendencia > 0 ? (first ? 'bg-emerald-500/30 text-emerald-100' : 'bg-emerald-100 text-emerald-700') : (first ? 'bg-red-500/30 text-red-100' : 'bg-red-100 text-red-600')">

@@ -42,6 +42,9 @@ export class MetricasComponent implements OnInit, OnDestroy {
   topTratos: any[] = [];
   clientesActivos: any[] = [];
   actividades: ActividadReciente[] = [];
+  
+  // Para la animación de números
+  displayKpis: any[] = [];
 
   private tratos: any[] = []; // Para botón de exportación
   private destroy$ = new Subject<void>();
@@ -64,11 +67,15 @@ export class MetricasComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (data) => {
         this.kpis = data.kpis || [];
+        this.displayKpis = this.kpis.map(k => ({ ...k, valor: '0' })); // Inicializar en 0 para la animación
         this.etapasFunnel = data.etapasFunnel || [];
         this.topTratos = data.topTratos || [];
         this.clientesActivos = data.clientesActivos || [];
         this.actividades = data.actividades || [];
         this.isLoading = false;
+
+        // Disparar animación tras un breve delay para que el renderizado inicial termine
+        setTimeout(() => this.animateAllKpis(), 100);
       },
       error: (err) => {
         console.error('Error al cargar datos del dashboard', err);
@@ -91,6 +98,60 @@ export class MetricasComponent implements OnInit, OnDestroy {
     this.filtroActual = filtro;
     // Nota: El backend actualmente sirve estadísticas integrales, 
     // se puede extender el API para aceptar el parámetro del filtro temporal.
+    this.cargarDashboard();
+  }
+
+  private animateAllKpis() {
+    this.kpis.forEach((kpi, index) => {
+      this.animateValue(index, kpi.valor);
+    });
+  }
+
+  private animateValue(index: number, targetStr: string) {
+    // Extraer solo los números, manteniendo decimales
+    const isCurrency = targetStr.includes('$');
+    const isPercent = targetStr.includes('%');
+    
+    // Limpiar string para obtener el número puro
+    const targetValue = parseFloat(targetStr.replace(/[^0-9,]/g, '').replace(',', '.'));
+    
+    if (isNaN(targetValue)) {
+      this.displayKpis[index].valor = targetStr;
+      return;
+    }
+
+    const duration = 1200; // ms
+    const startTime = performance.now();
+
+    const update = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing out sine: para que frene suavemente al final
+      const easeProgress = Math.sin((progress * Math.PI) / 2);
+      
+      const currentValue = targetValue * easeProgress;
+      
+      // Volver a formatear según el tipo original
+      let formatted = '';
+      if (isCurrency) {
+        formatted = '$' + Math.floor(currentValue).toLocaleString('es-AR');
+      } else if (isPercent) {
+        formatted = currentValue.toFixed(1) + '%';
+      } else {
+        formatted = Math.floor(currentValue).toLocaleString('es-AR');
+      }
+
+      this.displayKpis[index].valor = formatted;
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+        this.displayKpis[index].valor = targetStr; // Asegurar el valor exacto final
+      }
+    };
+
+    requestAnimationFrame(update);
   }
 
   getMaxMontoPipeline(): number {

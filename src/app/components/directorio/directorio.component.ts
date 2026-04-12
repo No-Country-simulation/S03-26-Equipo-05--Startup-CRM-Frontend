@@ -13,7 +13,15 @@ export class DirectorioComponent implements OnInit {
   clientesFiltrados: Cliente[] = [];
   busquedaGlobal: string = '';
   mostrarModalNuevoCliente: boolean = false;
+  mostrarModalCorreo: boolean = false;
   clienteSeleccionado: Cliente | null = null;
+  
+  datosCorreo: { to: string; subject: string; body: string } = {
+    to: '',
+    subject: '',
+    body: ''
+  };
+  enviandoCorreo: boolean = false;
   
   esModoEdicion: boolean = false;
   idEdicion: number | undefined;
@@ -165,5 +173,50 @@ export class DirectorioComponent implements OnInit {
 
   cerrarDetalleCliente() {
     this.clienteSeleccionado = null;
+  }
+
+  abrirModalCorreo(cliente: Cliente) {
+    this.datosCorreo = {
+      to: cliente.email || '',
+      subject: '',
+      body: ''
+    };
+    this.mostrarModalCorreo = true;
+    this.cerrarDetalleCliente();
+  }
+
+  cerrarModalCorreo() {
+    this.mostrarModalCorreo = false;
+  }
+
+  enviarCorreo() {
+    if (!this.datosCorreo.subject || !this.datosCorreo.body) {
+      Swal.fire('Error', 'El asunto y el cuerpo del mensaje son obligatorios.', 'warning');
+      return;
+    }
+
+    this.enviandoCorreo = true;
+    this.dataService.enviarEmail(this.datosCorreo).subscribe({
+      next: () => {
+        this.enviandoCorreo = false;
+        this.cerrarModalCorreo();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Correo Enviado!',
+          text: `El mensaje para ${this.datosCorreo.to} ha sido despachado correctamente.`,
+          confirmButtonColor: '#4A2B65'
+        });
+      },
+      error: (err) => {
+        this.enviandoCorreo = false;
+        console.error('Error enviando correo:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de Envío',
+          text: 'No se pudo enviar el correo. Verifica tu configuración SMTP en el servidor.',
+          confirmButtonColor: '#4A2B65'
+        });
+      }
+    });
   }
 }
